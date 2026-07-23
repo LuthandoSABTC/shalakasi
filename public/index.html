@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ShalaKasi</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-screen" id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">SK</div>
+    <h1>ShalaKasi</h1>
+    <p class="sub">Bitcoin Ekasi &middot; Diploma workstation login</p>
+    <div class="field">
+      <label>Username</label>
+      <input type="text" id="login-username" autocomplete="off">
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="login-password">
+    </div>
+    <button class="login-btn" id="login-submit">Log in</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="app">
+  <div class="rail">
+    <div class="rail-logo">SK</div>
+    <div class="rail-nav">
+      <button class="rail-btn active" data-view="course">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H12v16H5.5C4.7 20 4 19.3 4 18.5v-13Z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H12v16h6.5c.8 0 1.5-.7 1.5-1.5v-13Z"/></svg>
+        <span>Course</span>
+      </button>
+      <button class="rail-btn" data-view="satoshi">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9 10.5c0-.6.5-1 1-1s1 .4 1 1M13 10.5c0-.6.5-1 1-1s1 .4 1 1"/><path d="M8.5 14.5c1 1 5 1 6 0"/></svg>
+        <span>Satoshi</span>
+      </button>
+      <button class="rail-btn" data-view="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6" cy="6" r="2.2"/><circle cx="18" cy="6" r="2.2"/><circle cx="12" cy="13" r="2.2"/><circle cx="6" cy="19" r="2.2"/><circle cx="18" cy="19" r="2.2"/><path d="M7.8 7.2 10.3 11.4M16.2 7.2 13.7 11.4M11 15 7.6 17.3M13 15l3.4 2.3"/></svg>
+        <span>Progress</span>
+      </button>
+    </div>
+    <div class="rail-logout" id="logout-btn" title="Log out">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="topbar-title">Loading…</div>
+      <div class="topbar-title" id="student-name" style="color:var(--text-faint); font-size:12px;"></div>
+    </div>
+
+    <div class="view active" id="view-course">
+      <div class="course-wrap" id="course-content">
+        <p class="body-text">Loading your next section…</p>
+      </div>
+      <button class="fab-ask" id="ask-satoshi-fab">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#181008" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9 10.5c0-.6.5-1 1-1s1 .4 1 1M13 10.5c0-.6.5-1 1-1s1 .4 1 1"/><path d="M8.5 14.5c1 1 5 1 6 0"/></svg>
+        Ask Satoshi
+      </button>
+    </div>
+
+    <div class="view" id="view-satoshi">
+      <div class="chat-wrap">
+        <div class="chat-scroll" id="chat-scroll"></div>
+        <div class="chat-input-row">
+          <input type="text" id="chat-input" placeholder="Ask Satoshi anything about this section...">
+          <button class="send-btn" id="chat-send"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#181008" stroke-width="2.2"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="view" id="view-dashboard">
+      <div class="dash-wrap" id="dashboard-content">
+        <h1 class="dash-title">Your progress</h1>
+        <p class="dash-sub">Loading…</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>

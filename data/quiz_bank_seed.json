@@ -1,0 +1,38 @@
+{
+  "_readme": "One entry per checkpoint question. section_number must match a 'number' value in curriculum_seed.json exactly. correct_index is 0-based. This file only has 2.1 and 2.3 filled in as a template — copy the pattern to write the rest with Sassa.",
+  "quizzes": [
+    {
+      "section_number": "2.1",
+      "question": "Which of these best explains why cattle worked as money in early societies?",
+      "options": [
+        "Cattle were issued by a central authority",
+        "Cattle were widely recognised and trusted as valuable within the community",
+        "Cattle could be divided into infinitely small units"
+      ],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "2.3",
+      "question": "A form of money that is easy to carry and divide into small amounts is described as having which property?",
+      "options": [
+        "Scarcity",
+        "Portability and divisibility",
+        "Censorship resistance"
+      ],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "2.3",
+      "question": "If a currency loses half its purchasing power over ten years, which property of good money has weakened?",
+      "options": [
+        "Durability",
+        "Store of value",
+        "Portability"
+      ],
+      "correct_index": 1,
+      "difficulty": "stretch"
+    }
+  ]
+}

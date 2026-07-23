@@ -1,0 +1,146 @@
+{
+  "chapters": [
+    {
+      "number": 1,
+      "title": "Why Do We Need Money?",
+      "sections": [
+        { "number": "1.0", "title": "Introduction", "activity": null },
+        { "number": "1.1", "title": "Meet Satoshi", "activity": "Five Questions on Money" },
+        { "number": "1.2", "title": "Class Discussion: Why Do We Need Money?", "activity": "Class Discussion" }
+      ]
+    },
+    {
+      "number": 2,
+      "title": "What is Money?",
+      "sections": [
+        { "number": "2.0", "title": "Introduction", "activity": "Class Discussion - \"What is Money?\"" },
+        { "number": "2.1", "title": "Definition of Money", "activity": null },
+        { "number": "2.2", "title": "Function of Money", "activity": null },
+        { "number": "2.3", "title": "Properties of Money", "activity": null },
+        { "number": "2.4", "title": "Types of Money", "activity": null },
+        { "number": "2.5", "title": "The Psychology of Money: Scarcity, Time Preference, and Trade-offs", "activity": "Time Preference" }
+      ]
+    },
+    {
+      "number": 3,
+      "title": "The History of Money",
+      "sections": [
+        { "number": "3.0", "title": "Introduction", "activity": "Barter Game" },
+        { "number": "3.1", "title": "Evolution from Barter to Modern Currency", "activity": null },
+        { "number": "3.1.1", "title": "Problems with Early Forms of Money", "activity": null },
+        { "number": "3.1.2", "title": "Development of Coinage and Paper Money", "activity": null },
+        { "number": "3.1.3", "title": "Transition from Sound to Unsound Money", "activity": null },
+        { "number": "3.1.4", "title": "Paper to Plastic", "activity": null },
+        { "number": "3.2", "title": "Digital Currency", "activity": null }
+      ]
+    },
+    {
+      "number": 4,
+      "title": "What is Fiat Money and Who Controls it?",
+      "sections": [
+        { "number": "4.0", "title": "Introduction", "activity": null },
+        { "number": "4.1", "title": "Brief History of Fiat Money", "activity": null },
+        { "number": "4.2", "title": "The Fiat System", "activity": null },
+        { "number": "4.2.1", "title": "A Monetary System by Decree", "activity": null },
+        { "number": "4.2.2", "title": "Fractional Reserve Banking: A System Fueled by Debt", "activity": "Fractional Reserve Banking" },
+        { "number": "4.2.3", "title": "Who Controls the Fiat System and How Do They Benefit?", "activity": null },
+        { "number": "4.3", "title": "Central Bank Digital Currencies: The Future of Fiat Money", "activity": null }
+      ]
+    },
+    {
+      "number": 5,
+      "title": "How Problems Lead to Solutions",
+      "sections": [
+        { "number": "5.0", "title": "Introduction to the Problem", "activity": null },
+        { "number": "5.1", "title": "Decreasing Purchasing Power", "activity": null },
+        { "number": "5.1.1", "title": "Monetary Inflation and Its Effect on Purchasing Power", "activity": "The Effects of Inflation: An Auction Activity" },
+        { "number": "5.2", "title": "The Global Debt Burden and Social Inequality", "activity": null },
+        { "number": "5.2.1", "title": "Impact on the Individual - Loss of Purchasing Power", "activity": null },
+        { "number": "5.2.2", "title": "Impact on Society - Increasing Wealth Inequality", "activity": "Consequences of the Fiat System" },
+        { "number": "5.2.3", "title": "The Global Debt Burden", "activity": null },
+        { "number": "5.3", "title": "The Cypherpunks and the Quest for a Decentralized Currency", "activity": null },
+        { "number": "5.3.1", "title": "The Cypherpunks", "activity": null },
+        { "number": "5.3.2", "title": "Centralized vs Decentralized Systems", "activity": null },
+        { "number": "5.3.3", "title": "Brief History of Digital Currencies", "activity": null }
+      ]
+    },
+    {
+      "number": 6,
+      "title": "An Introduction to Bitcoin",
+      "sections": [
+        { "number": "6.0", "title": "Satoshi Nakamoto and the Creation of Bitcoin", "activity": null },
+        { "number": "6.1", "title": "How Does Bitcoin Work?", "activity": null },
+        { "number": "6.1.1", "title": "The Nakamoto Consensus Mechanism", "activity": null },
+        { "number": "6.1.2", "title": "The Players of the Game", "activity": "Consensus Building in a Peer-to-Peer Network" },
+        { "number": "6.2", "title": "Bitcoin as Sound Digital Money", "activity": null },
+        { "number": "6.2.1", "title": "Introduction", "activity": null },
+        { "number": "6.2.2", "title": "Bitcoin's Features", "activity": "Class Discussion - Is Bitcoin Sound Money?" },
+        { "number": "6.2.3", "title": "Embracing Personal Responsibility", "activity": null }
+      ]
+    },
+    {
+      "number": 7,
+      "title": "How to Use Bitcoin",
+      "sections": [
+        { "number": "7.0", "title": "Introduction", "activity": null },
+        { "number": "7.1", "title": "Acquiring and Exchanging Bitcoin", "activity": null },
+        { "number": "7.1.1", "title": "P2P: Physical", "activity": null },
+        { "number": "7.1.2", "title": "P2P: Online", "activity": null },
+        { "number": "7.1.3", "title": "Centralized Exchanges", "activity": null },
+        { "number": "7.2", "title": "An Introduction to Bitcoin Wallets", "activity": null },
+        { "number": "7.2.1", "title": "Self-Custodial vs Custodial Wallets", "activity": null },
+        { "number": "7.2.2", "title": "Different Types of Bitcoin Wallets", "activity": null },
+        { "number": "7.2.3", "title": "Open Source vs Closed Source", "activity": "Class Evaluation of Bitcoin Wallets" },
+        { "number": "7.3", "title": "Setting Up a Mobile Bitcoin Wallet", "activity": "Setting Up/Recovering a Bitcoin Wallet" },
+        { "number": "7.4", "title": "Receiving and Sending Transactions", "activity": "Bitcoin Transactions in Action" },
+        { "number": "7.5", "title": "Saving in Bitcoin", "activity": null },
+        { "number": "7.6", "title": "DYOR - Don't Trust, Verify", "activity": null }
+      ]
+    },
+    {
+      "number": 8,
+      "title": "Lightning Network: Using Bitcoin in Your Daily Life",
+      "sections": [
+        { "number": "8.0", "title": "Introduction", "activity": "Watch \"Bitcoin Lightning Network Explained: How it Actually Works\"" },
+        { "number": "8.1", "title": "The Lightning Network", "activity": null },
+        { "number": "8.2", "title": "Different Types of Lightning Wallets", "activity": null },
+        { "number": "8.2.1", "title": "Self-Custodial vs Custodial Wallets", "activity": null },
+        { "number": "8.2.2", "title": "Open Source vs Closed Source", "activity": null },
+        { "number": "8.3", "title": "Setting Up a Bitcoin Lightning Wallet", "activity": null },
+        { "number": "8.4", "title": "Sending and Receiving Lightning Transactions", "activity": "Lightning Wallet Relay Race" },
+        { "number": "8.5", "title": "Buying Coffee and Groceries with Bitcoin", "activity": null },
+        { "number": "8.5.1", "title": "Online: Payment Plugins - Ecommerce", "activity": null },
+        { "number": "8.5.2", "title": "In Person: Find a Merchant In Your Area", "activity": null },
+        { "number": "8.5.3", "title": "Transitional Tools: Gift Cards and Payment Cards", "activity": null },
+        { "number": "8.5.4", "title": "Circular Economies and Bitcoin as a Medium of Exchange", "activity": null }
+      ]
+    },
+    {
+      "number": 9,
+      "title": "An Introduction to the Technical Side of Bitcoin",
+      "sections": [
+        { "number": "9.0", "title": "Introduction", "activity": "Watch \"How Bitcoin Works Under the Hood\"" },
+        { "number": "9.1", "title": "Public and Private Keys: Security through Cryptography", "activity": null },
+        { "number": "9.1.1", "title": "Cryptography Public/Private Keys", "activity": null },
+        { "number": "9.1.2", "title": "Hashing Explanation", "activity": "Generate SHA 256 Hash" },
+        { "number": "9.2", "title": "The UTXO Model", "activity": null },
+        { "number": "9.3", "title": "A Closer Look at Bitcoin Nodes and Miners", "activity": null },
+        { "number": "9.3.1", "title": "What is a Bitcoin Node and How Do I Set One Up?", "activity": "Watch Video on Bitcoin Nodes" },
+        { "number": "9.3.2", "title": "What is a Bitcoin Miner and How Does Mining Work?", "activity": null },
+        { "number": "9.4", "title": "What is the Mempool?", "activity": "Mempool" },
+        { "number": "9.5", "title": "How Bitcoin Transactions Work from Start to Finish", "activity": null }
+      ]
+    },
+    {
+      "number": 10,
+      "title": "Why Bitcoin?",
+      "sections": [
+        { "number": "10.0", "title": "Introduction", "activity": "What Could a Bitcoin Future Look Like?" },
+        { "number": "10.1", "title": "What are Central Bank Digital Currencies (CBDCs) and Who Controls Them?", "activity": null },
+        { "number": "10.2", "title": "The Philosophy of Bitcoin", "activity": "Class Discussion: Do You Have the Right to Control Your Own Money?" },
+        { "number": "10.3", "title": "The Benefits of Bitcoin", "activity": null },
+        { "number": "10.4", "title": "An Empowered Future", "activity": "Class Discussion: How Did Your Perspective Change?" }
+      ]
+    }
+  ]
+}

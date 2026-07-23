@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ShalaKasi — Admin</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/admin-style.css">
+</head>
+<body>
+
+<!-- ADMIN KEY GATE -->
+<div class="gate-screen" id="gate-screen">
+  <div class="gate-card">
+    <div class="gate-logo">SK</div>
+    <h1>ShalaKasi Admin</h1>
+    <p class="sub">Bitcoin Ekasi &middot; Diploma admin dashboard</p>
+    <div class="field">
+      <label>Admin key</label>
+      <input type="password" id="gate-key" autocomplete="off">
+    </div>
+    <button class="gate-btn" id="gate-submit">Enter</button>
+    <div class="gate-error" id="gate-error"></div>
+  </div>
+</div>
+
+<!-- ADMIN APP -->
+<div class="admin-app" id="admin-app">
+  <div class="admin-topbar">
+    <div class="brand">
+      <div class="brand-logo">SK</div>
+      ShalaKasi <span class="sub">&nbsp;Admin</span>
+    </div>
+    <button class="gate-logout" id="gate-logout">Log out</button>
+  </div>
+
+  <div class="admin-body">
+    <h1 class="page-title">Students</h1>
+    <p class="page-sub">Provision new workstation logins and review mastery, chat, and adaptive routing per student.</p>
+
+    <div class="add-student-card">
+      <h3>Add a student</h3>
+      <div class="add-grid">
+        <div class="field"><label>Full name</label><input type="text" id="new-fullname" placeholder="Zanele M."></div>
+        <div class="field"><label>Username</label><input type="text" id="new-username" placeholder="zanele01"></div>
+        <div class="field"><label>Password</label><input type="text" id="new-password" placeholder="temp password"></div>
+        <div class="field"><label>Cohort</label><input type="text" id="new-cohort" placeholder="2026-Q3"></div>
+      </div>
+      <button class="add-btn" id="add-student-btn" style="margin-top:14px;">Create login</button>
+      <div class="add-status" id="add-status"></div>
+    </div>
+
+    <table class="student-table">
+      <thead>
+        <tr><th>Name</th><th>Username</th><th>Cohort</th><th>Status</th><th>Created</th></tr>
+      </thead>
+      <tbody id="student-rows">
+        <tr><td colspan="5" class="empty-note">Loading students…</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- DETAIL PANEL -->
+<div class="overlay" id="overlay"></div>
+<div class="detail-panel" id="detail-panel">
+  <div class="detail-head">
+    <div>
+      <h2 id="detail-name">Student</h2>
+      <div class="meta" id="detail-meta"></div>
+    </div>
+    <button class="close-btn" id="detail-close">✕</button>
+  </div>
+  <div class="detail-tabs">
+    <div class="detail-tab active" data-tab="mastery">Mastery</div>
+    <div class="detail-tab" data-tab="decisions">Satoshi's decisions</div>
+    <div class="detail-tab" data-tab="chat">Chat log</div>
+  </div>
+  <div class="detail-section active" id="section-mastery"></div>
+  <div class="detail-section" id="section-decisions"></div>
+  <div class="detail-section" id="section-chat"></div>
+</div>
+
+<script src="/admin.js"></script>
+</body>
+</html>
