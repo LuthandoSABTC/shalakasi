@@ -14,6 +14,62 @@ function authHeaders() {
   return { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
 }
 
+// ---------- VOICE (Satoshi read-aloud) ----------
+// Uses the browser's built-in speech synthesis — no API key, no cost,
+// works even before ANTHROPIC_API_KEY is set. Falls back to hiding
+// the buttons entirely on browsers/devices that don't support it
+// (all mainstream desktop browsers do).
+const speechSupported = 'speechSynthesis' in window;
+let currentUtterance = null;
+
+function speakText(text, btn) {
+  if (!speechSupported) return;
+
+  // If this exact button is already speaking, treat the click as "stop."
+  if (btn && btn.dataset.speaking === 'true') {
+    window.speechSynthesis.cancel();
+    return;
+  }
+
+  window.speechSynthesis.cancel(); // stop anything else currently reading
+  const utterance = new SpeechSynthesisUtterance(stripHtmlForSpeech(text));
+  utterance.rate = 0.95;
+  currentUtterance = utterance;
+
+  document.querySelectorAll('[data-speaking="true"]').forEach((b) => setSpeakingState(b, false));
+  if (btn) setSpeakingState(btn, true);
+
+  utterance.onend = () => { if (btn) setSpeakingState(btn, false); };
+  utterance.onerror = () => { if (btn) setSpeakingState(btn, false); };
+
+  window.speechSynthesis.speak(utterance);
+}
+
+function setSpeakingState(btn, speaking) {
+  btn.dataset.speaking = speaking ? 'true' : 'false';
+  btn.classList.toggle('speaking', speaking);
+  const stopIcon = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>';
+  const playIcon = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M19 12a7 7 0 0 0-4-6.3M16 12a4 4 0 0 0-2-3.5"/></svg>';
+
+  if (btn.classList.contains('listen-btn')) {
+    btn.innerHTML = speaking ? `${stopIcon} Stop` : `${playIcon} Listen`;
+  } else {
+    btn.innerHTML = speaking ? stopIcon : playIcon; // compact chat buttons — icon only
+  }
+}
+
+function stripHtmlForSpeech(html) {
+  const div = document.createElement('div');
+  div.innerHTML = html.replace(/<br\s*\/?>/gi, '. ');
+  return div.textContent || div.innerText || '';
+}
+
+// Stop any speech in progress when navigating away — a student switching
+// from Course to Satoshi shouldn't have the old section still narrating.
+function stopSpeech() {
+  if (speechSupported) window.speechSynthesis.cancel();
+}
+
 // ---------- LOGIN ----------
 document.getElementById('login-submit').addEventListener('click', doLogin);
 document.getElementById('login-password').addEventListener('keydown', (e) => {
@@ -75,6 +131,7 @@ document.querySelectorAll('.rail-btn').forEach((btn) => {
 });
 
 function showView(name) {
+  stopSpeech();
   document.querySelectorAll('.view').forEach((v) => v.classList.remove('active'));
   document.getElementById('view-' + name).classList.add('active');
   document.querySelectorAll('.rail-btn').forEach((b) => b.classList.remove('active'));
@@ -134,9 +191,18 @@ async function loadSection(sectionId, chapterNumber, chapterTitle) {
       <div class="satoshi-avatar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B0D10" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M9.5 10.8c0-.5.4-.9.9-.9s.9.4.9.9M12.7 10.8c0-.5.4-.9.9-.9s.9.4.9.9"/><path d="M9.5 14c.9.9 4.1.9 5 0"/></svg></div>
       <p><b>Satoshi:</b> Take your time on this one — you can always ask me if something doesn't click.</p>
     </div>
+    ${speechSupported ? '<button class="listen-btn" id="listen-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M19 12a7 7 0 0 0-4-6.3M16 12a4 4 0 0 0-2-3.5"/></svg> Listen</button>' : ''}
     <div class="body-text">${(data.section.content_md || 'Content for this section is being written by Sassa — check back soon, or ask Satoshi to walk you through it in the meantime.').replace(/\n/g, '<br>')}</div>
     <div id="checkpoint-slot"></div>
   `;
+
+  const listenBtn = document.getElementById('listen-btn');
+  if (listenBtn) {
+    listenBtn.addEventListener('click', () => {
+      const text = data.section.content_md || '';
+      speakText(`${data.section.title}. ${text}`, listenBtn);
+    });
+  }
 
   renderCheckpoint();
 }
@@ -217,14 +283,25 @@ async function loadChat() {
 
 function renderMsg(m) {
   const isSat = m.role === 'satoshi';
+  const speakBtn = isSat && speechSupported
+    ? `<button class="msg-speak-btn" data-text="${encodeURIComponent(m.message)}" title="Listen"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M19 12a7 7 0 0 0-4-6.3M16 12a4 4 0 0 0-2-3.5"/></svg></button>`
+    : '';
   return `<div class="msg ${isSat ? 'from-satoshi' : 'from-student'}">
     ${isSat ? avatarHtml() : `<div class="msg-avatar">${(student.full_name || '?')[0]}</div>`}
-    <div><div class="msg-name">${isSat ? 'Satoshi' : 'You'}</div><div class="msg-bubble">${m.message}</div></div>
+    <div><div class="msg-name">${isSat ? 'Satoshi' : 'You'}${speakBtn}</div><div class="msg-bubble">${m.message}</div></div>
   </div>`;
 }
 function avatarHtml() {
   return `<div class="msg-avatar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0B0D10" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9 10.5c0-.6.5-1 1-1s1 .4 1 1M13 10.5c0-.6.5-1 1-1s1 .4 1 1"/><path d="M8.5 14.5c1 1 5 1 6 0"/></svg></div>`;
 }
+
+// Event delegation — handles speak buttons on messages loaded in a batch
+// (loadChat) and ones appended one at a time (sendChat) with one listener.
+document.getElementById('chat-scroll').addEventListener('click', (e) => {
+  const btn = e.target.closest('.msg-speak-btn');
+  if (!btn) return;
+  speakText(decodeURIComponent(btn.dataset.text), btn);
+});
 
 document.getElementById('chat-send').addEventListener('click', sendChat);
 document.getElementById('chat-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') sendChat(); });
