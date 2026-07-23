@@ -79,6 +79,19 @@ body{
 }
 .topbar-title{font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:15px; color:var(--text-dim);}
 .topbar-title b{color:var(--text); font-weight:600;}
+.topbar-right{display:flex; align-items:center; gap:18px;}
+
+.price-ticker{
+  display:flex; align-items:center; gap:7px;
+  font-family:'JetBrains Mono', monospace; font-size:12px;
+  background:var(--surface); border:1px solid var(--border); border-radius:20px;
+  padding:6px 13px; color:var(--text-dim); white-space:nowrap;
+}
+.price-ticker .btc-symbol{color:var(--orange); font-weight:600;}
+.price-ticker .price-value{color:var(--text);}
+.price-ticker .price-change{font-size:10.5px; padding:2px 6px; border-radius:10px;}
+.price-ticker .price-change.up{color:var(--mastered); background:var(--mastered-soft);}
+.price-ticker .price-change.down{color:var(--dusk); background:rgba(255,107,94,0.12);}
 
 .view{flex:1; overflow-y:auto; display:none;}
 .view.active{display:block;}

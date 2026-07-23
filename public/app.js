@@ -112,6 +112,7 @@ document.getElementById('logout-btn').addEventListener('click', () => {
   sessionStorage.removeItem('shalakasi_token');
   sessionStorage.removeItem('shalakasi_student');
   token = null; student = null;
+  stopPriceTicker();
   document.getElementById('app').classList.remove('active');
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('login-username').value = '';
@@ -124,6 +125,47 @@ function enterApp() {
   document.getElementById('app').classList.add('active');
   document.getElementById('student-name').textContent = student.full_name;
   loadNextSection();
+  startPriceTicker();
+}
+
+// ---------- BTC/ZAR PRICE TICKER ----------
+// CoinGecko's free public API, fetched directly from the browser —
+// no key, no cost. Refreshes every 60s while logged in; the interval
+// is cleared on logout so it doesn't keep silently running/stacking.
+let priceTickerInterval = null;
+
+function startPriceTicker() {
+  fetchPrice();
+  stopPriceTicker(); // clear any previous interval before starting a fresh one
+  priceTickerInterval = setInterval(fetchPrice, 60_000);
+}
+
+function stopPriceTicker() {
+  if (priceTickerInterval) clearInterval(priceTickerInterval);
+  priceTickerInterval = null;
+}
+
+async function fetchPrice() {
+  const el = document.getElementById('price-ticker');
+  if (!el) return;
+  try {
+    const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=zar&include_24hr_change=true');
+    const data = await res.json();
+    const price = data?.bitcoin?.zar;
+    const change = data?.bitcoin?.zar_24h_change;
+    if (!price) throw new Error('no price');
+
+    const formattedPrice = 'R' + Math.round(price).toLocaleString('en-ZA');
+    const changeClass = change >= 0 ? 'up' : 'down';
+    const changeSign = change >= 0 ? '+' : '';
+    const changeHtml = typeof change === 'number'
+      ? `<span class="price-change ${changeClass}">${changeSign}${change.toFixed(1)}%</span>`
+      : '';
+
+    el.innerHTML = `<span class="btc-symbol">₿</span><span class="price-value">${formattedPrice}</span>${changeHtml}`;
+  } catch (err) {
+    el.innerHTML = `<span class="btc-symbol">₿</span><span class="price-value">—</span>`;
+  }
 }
 
 document.querySelectorAll('.rail-btn').forEach((btn) => {
