@@ -193,8 +193,11 @@ async function loadSection(sectionId, chapterNumber, chapterTitle) {
     </div>
     ${speechSupported ? '<button class="listen-btn" id="listen-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M19 12a7 7 0 0 0-4-6.3M16 12a4 4 0 0 0-2-3.5"/></svg> Listen</button>' : ''}
     <div class="body-text">${(data.section.content_md || 'Content for this section is being written by Sassa — check back soon, or ask Satoshi to walk you through it in the meantime.').replace(/\n/g, '<br>')}</div>
+    <div id="live-widget-slot"></div>
     <div id="checkpoint-slot"></div>
   `;
+
+  loadLiveBitcoinWidget(data.section.number);
 
   const listenBtn = document.getElementById('listen-btn');
   if (listenBtn) {
@@ -205,6 +208,79 @@ async function loadSection(sectionId, chapterNumber, chapterTitle) {
   }
 
   renderCheckpoint();
+}
+
+// ---------- LIVE BITCOIN NETWORK WIDGET (Chapter 9) ----------
+// Pulls real, current data from mempool.space's free public API,
+// fetched directly from the student's browser — no backend involved,
+// no API key, no cost. Shown only on the sections where it's actually
+// relevant to what's being taught, not on every page.
+const MEMPOOL_WIDGET_SECTIONS = {
+  '9.3.2': 'blocks',   // mining section — show block height / timing
+  '9.4': 'mempool',    // mempool section — show pending tx + fees
+  '9.5': 'both',       // full flow — show everything
+};
+
+async function loadLiveBitcoinWidget(sectionNumber) {
+  const mode = MEMPOOL_WIDGET_SECTIONS[sectionNumber];
+  const slot = document.getElementById('live-widget-slot');
+  if (!mode || !slot) return;
+
+  slot.innerHTML = `<div class="live-widget"><div class="live-widget-loading">Fetching live Bitcoin network data…</div></div>`;
+
+  try {
+    const calls = [];
+    if (mode === 'blocks' || mode === 'both') {
+      calls.push(fetch('https://mempool.space/api/blocks/tip/height').then((r) => r.text()));
+      calls.push(fetch('https://mempool.space/api/blocks/tip/hash').then((r) => r.text()));
+    }
+    if (mode === 'mempool' || mode === 'both') {
+      calls.push(fetch('https://mempool.space/api/mempool').then((r) => r.json()));
+      calls.push(fetch('https://mempool.space/api/v1/fees/recommended').then((r) => r.json()));
+    }
+
+    const results = await Promise.all(calls);
+    let height, hash, mempoolStats, fees;
+    if (mode === 'blocks') [height, hash] = results;
+    if (mode === 'mempool') [mempoolStats, fees] = results;
+    if (mode === 'both') [height, hash, mempoolStats, fees] = results;
+
+    let html = `<div class="live-widget">
+      <div class="live-widget-head">
+        <span class="live-dot"></span> Live from the Bitcoin network right now
+      </div>
+      <div class="live-widget-grid">`;
+
+    if (height !== undefined) {
+      html += `
+        <div class="live-stat">
+          <div class="live-stat-label">Current block height</div>
+          <div class="live-stat-value">${Number(height).toLocaleString()}</div>
+          <div class="live-stat-sub">${hash.slice(0, 16)}…</div>
+        </div>`;
+    }
+    if (mempoolStats) {
+      html += `
+        <div class="live-stat">
+          <div class="live-stat-label">Transactions waiting in the mempool</div>
+          <div class="live-stat-value">${Number(mempoolStats.count).toLocaleString()}</div>
+          <div class="live-stat-sub">${(mempoolStats.vsize / 1_000_000).toFixed(1)} MB of pending data</div>
+        </div>`;
+    }
+    if (fees) {
+      html += `
+        <div class="live-stat">
+          <div class="live-stat-label">Fee for next-block confirmation</div>
+          <div class="live-stat-value">${fees.fastestFee} sat/vB</div>
+          <div class="live-stat-sub">Economy: ${fees.economyFee} sat/vB</div>
+        </div>`;
+    }
+
+    html += `</div><div class="live-widget-note">This is real, live data — not a screenshot. Reload the page in a few minutes and these numbers will have changed.</div></div>`;
+    slot.innerHTML = html;
+  } catch (err) {
+    slot.innerHTML = `<div class="live-widget"><div class="live-widget-loading">Couldn't reach mempool.space right now — this needs an internet connection. The lesson content above still explains the concept either way.</div></div>`;
+  }
 }
 
 function renderCheckpoint() {
