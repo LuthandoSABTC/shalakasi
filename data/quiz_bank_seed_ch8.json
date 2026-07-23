@@ -1,0 +1,38 @@
+{
+  "_readme": "Additional quiz_bank entries for Chapter 8.",
+  "quizzes": [
+    {
+      "section_number": "8.1",
+      "question": "What actually touches the base Bitcoin blockchain in a typical Lightning transaction?",
+      "options": [
+        "Every single payment sent through the channel",
+        "Only the opening and closing of the payment channel — payments within it happen off-chain",
+        "Nothing — Lightning is completely separate from Bitcoin"
+      ],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "8.2.1",
+      "question": "What's the tradeoff of a custodial Lightning wallet, compared to self-custodial?",
+      "options": [
+        "It's simpler to use, but you're trusting the provider to manage your channels and keys honestly",
+        "It's slower than self-custodial wallets",
+        "It can only be used for online purchases, not in person"
+      ],
+      "correct_index": 0,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "8.5.4",
+      "question": "What is a 'circular economy' in the context of this section?",
+      "options": [
+        "An economy where all transactions must be circular-shaped QR codes",
+        "Bitcoin earned locally being spent locally too, rather than immediately converted back to fiat currency",
+        "An economy that only accepts round currency, not paper notes"
+      ],
+      "correct_index": 1,
+      "difficulty": "core"
+    }
+  ]
+}

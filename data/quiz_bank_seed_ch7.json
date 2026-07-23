@@ -1,0 +1,49 @@
+{
+  "_readme": "Additional quiz_bank entries for Chapter 7.",
+  "quizzes": [
+    {
+      "section_number": "7.1.3",
+      "question": "What's the key tradeoff when buying bitcoin through a centralized exchange?",
+      "options": [
+        "It's illegal in most countries",
+        "It's often the simplest starting point, but you're trusting the exchange with your identity and, until withdrawal, your funds",
+        "It only works for very large purchases"
+      ],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "7.2.1",
+      "question": "What does 'not your keys, not your coins' mean?",
+      "options": [
+        "You should never write down your recovery phrase",
+        "If a company holds your private keys instead of you, you don't truly control that bitcoin",
+        "Bitcoin wallets require a physical key to unlock"
+      ],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "7.3",
+      "question": "Why should a wallet recovery phrase never be stored as a screenshot or phone note?",
+      "options": [
+        "Screenshots take up too much storage space",
+        "It's the master key to your funds — anyone who gets it can access everything, and digital copies are easier to steal or lose",
+        "Recovery phrases expire after 30 days"
+      ],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "7.4",
+      "question": "Why does this section stress double-checking an address before sending bitcoin?",
+      "options": [
+        "Bitcoin transactions are irreversible — there's no bank to call to undo a mistaken send",
+        "Addresses expire after a few minutes",
+        "Wrong addresses are automatically rejected by the network"
+      ],
+      "correct_index": 0,
+      "difficulty": "core"
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "_readme": "Additional quiz_bank entries for Chapter 9.",
+  "quizzes": [
+    {
+      "section_number": "9.1.1",
+      "question": "Why is it safe to share your public key with anyone?",
+      "options": [
+        "Because the private key can only be derived from the public key with special software",
+        "Because deriving a public key from a private key is easy, but reversing that process to find the private key is effectively impossible",
+        "Public keys expire after 24 hours, so sharing them is never risky"
+      ],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "9.1.2",
+      "question": "What property of hash functions makes Bitcoin's blockchain tamper-evident?",
+      "options": [
+        "Hashes can be reversed to reveal the original transaction",
+        "Even a tiny change to the input produces a completely different hash, so altering a past transaction would break the chain",
+        "Hash functions only work on numbers, not text"
+      ],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "9.2",
+      "question": "How is the UTXO model different from a traditional bank account balance?",
+      "options": [
+        "It tracks ownership through individual unspent outputs, like separate notes, rather than one running total",
+        "It only allows one transaction per day",
+        "It requires a bank to approve every UTXO before it's created"
+      ],
+      "correct_index": 0,
+      "difficulty": "stretch"
+    },
+    {
+      "section_number": "9.3.1",
+      "question": "Why does running your own full node matter, according to this section?",
+      "options": [
+        "It's required to send any Bitcoin transaction",
+        "It lets you independently verify every transaction and block against Bitcoin's rules, without trusting anyone else's word",
+        "It guarantees you'll be selected to mine the next block"
+      ],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "9.4",
+      "question": "What is the mempool?",
+      "options": [
+        "A backup copy of the entire blockchain",
+        "A holding area of pending, unconfirmed transactions waiting to be included in a block",
+        "The wallet where miners store their earned bitcoin"
+      ],
+      "correct_index": 1,
+      "difficulty": "core"
+    }
+  ]
+}

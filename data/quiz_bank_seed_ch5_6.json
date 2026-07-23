@@ -1,0 +1,71 @@
+{
+  "_readme": "Additional quiz_bank entries for Chapters 5-6.",
+  "quizzes": [
+    {
+      "section_number": "5.1",
+      "question": "Why doesn't inflation affect everyone equally?",
+      "options": [
+        "It only affects people who don't work hard enough",
+        "People who receive newly created money first benefit before prices rise; savers holding cash lose value in the meantime",
+        "Inflation actually affects everyone in exactly the same way"
+      ],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "5.2.2",
+      "question": "According to this section, why does wealth inequality tend to widen under ongoing inflation?",
+      "options": [
+        "Asset owners benefit as asset prices rise with the money supply, while wages for non-owners often lag behind",
+        "Poor people spend money less wisely than rich people",
+        "Inflation is designed specifically to punish asset owners"
+      ],
+      "correct_index": 0,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "5.3.3",
+      "question": "What problem did earlier attempts at digital cash (before Bitcoin) fail to solve without relying on a trusted central party?",
+      "options": [
+        "Making transactions fast enough",
+        "The double-spend problem — preventing the same digital money from being spent twice",
+        "Making digital money look visually appealing"
+      ],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "6.1.1",
+      "question": "What is Proof-of-Work used for in Bitcoin?",
+      "options": [
+        "It lets a central authority approve transactions faster",
+        "It makes it expensive to cheat and cheap to verify, allowing independent computers to agree on a shared history without a trusted party",
+        "It encrypts messages between users for privacy"
+      ],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "6.2.2",
+      "question": "What enforces Bitcoin's maximum supply of 21 million coins?",
+      "options": [
+        "A promise made by Satoshi Nakamoto personally",
+        "A vote held every four years among miners",
+        "The software rules that every participant on the network independently runs and verifies"
+      ],
+      "correct_index": 2,
+      "difficulty": "stretch"
+    },
+    {
+      "section_number": "6.2.3",
+      "question": "What tradeoff does this section highlight as often underestimated by new Bitcoin users?",
+      "options": [
+        "Bitcoin transactions take several days to complete",
+        "Removing the need for a central authority also removes the safety net of a bank fixing your mistakes — personal responsibility increases",
+        "Bitcoin cannot be used for small purchases"
+      ],
+      "correct_index": 1,
+      "difficulty": "core"
+    }
+  ]
+}

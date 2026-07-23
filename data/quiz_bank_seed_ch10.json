@@ -1,0 +1,27 @@
+{
+  "_readme": "Additional quiz_bank entries for Chapter 10. Sections 10.2 and 10.4 are class discussions (matching the source workbook's pattern) and deliberately have no checkpoint questions, same as 1.2 and 2.0 earlier in the curriculum.",
+  "quizzes": [
+    {
+      "section_number": "10.1",
+      "question": "What is a key concern critics raise about Central Bank Digital Currencies (CBDCs)?",
+      "options": [
+        "They would make transactions slower than cash",
+        "They could give a government full visibility into every transaction and the technical ability to freeze or restrict funds directly",
+        "They cannot be used for international payments"
+      ],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "10.3",
+      "question": "According to this section, what is the honest framing of Bitcoin's benefits?",
+      "options": [
+        "Bitcoin is risk-free and has no meaningful tradeoffs",
+        "The benefits are real, but come with real tradeoffs — the case is that many people find those tradeoffs worth taking, not that there are none",
+        "Bitcoin's only benefit is its price increasing over time"
+      ],
+      "correct_index": 1,
+      "difficulty": "core"
+    }
+  ]
+}

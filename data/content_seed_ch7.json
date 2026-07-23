@@ -1,0 +1,30 @@
+{
+  "_readme": "content_md for Chapter 7. This is the first heavily practical/how-to chapter — content leans more on clear steps than deep theory, which is intentional given the subject matter. Sassa: the wallet-specific advice here is generic on purpose (not recommending one brand) — worth localizing with whatever wallets Bitcoin Ekasi actually teaches hands-on in class.",
+  "sections": {
+    "7.0": "Everything up to this point has been about understanding money and Bitcoin conceptually. This chapter shifts to practical skills: how do you actually acquire, hold, and use bitcoin yourself?\n\nThis is where the Diploma gets hands-on. Expect to actually set up a wallet and send a real transaction during this chapter, not just read about it.",
+
+    "7.1": "There are three broad ways to acquire bitcoin: trading peer-to-peer with another person (in cash or otherwise), buying online peer-to-peer, or using a centralized exchange. Each has different tradeoffs around speed, privacy, and how much you need to trust a third party.",
+
+    "7.1.1": "Physical peer-to-peer trading means exchanging cash for bitcoin directly with another person, often through a local Bitcoin ATM, a community meetup, or someone you already trust. This is often the most accessible entry point in a community like ours, since it doesn't require a bank account or ID verification with a distant company — just a working Lightning or on-chain wallet.",
+
+    "7.1.2": "Online peer-to-peer platforms connect buyers and sellers directly over the internet, using escrow services to protect both sides during the trade. This opens up trading with people outside your immediate area, at the cost of needing more comfort navigating an online platform.",
+
+    "7.1.3": "Centralized exchanges are companies that let you buy bitcoin directly with local currency, usually via bank transfer or card. They're often the simplest starting point for someone new, but require you to trust the exchange with your identity documents and, until you withdraw it, your money too — the exchange holds your bitcoin on your behalf, not you.",
+
+    "7.2": "A Bitcoin wallet doesn't actually 'hold' bitcoin the way a physical wallet holds cash — it holds the private keys that prove you control certain bitcoin recorded on the blockchain. Understanding this distinction is the foundation for everything else in this section.",
+
+    "7.2.1": "A self-custodial wallet means you alone hold the private keys — nobody can freeze, seize, or block your funds without your key, but nobody can help you recover them either if you lose that key. A custodial wallet means a company holds the keys on your behalf, similar to a bank — more convenient and forgiving of mistakes, but you're trusting that company not to freeze your account or go out of business.\n\nThere's a well-known saying in the Bitcoin community worth remembering here: 'not your keys, not your coins.'",
+
+    "7.2.2": "Wallets also differ in which layer of Bitcoin they interact with. On-chain wallets deal directly with the base Bitcoin blockchain — good for larger amounts and savings, slower and costlier per transaction. Lightning wallets (covered fully in Chapter 8) use a faster, cheaper layer built on top of Bitcoin — ideal for everyday spending like buying coffee or paying a taxi fare.",
+
+    "7.2.3": "Open-source wallet software means the code is publicly available for anyone to inspect, verify, and audit — nobody has to simply trust the developer's word that it does what it claims. Closed-source software can't be independently verified in the same way.\n\nActivity: as a class, evaluate a few different wallets together against these criteria (self-custodial vs custodial, on-chain vs Lightning, open vs closed source) before choosing which to actually set up.",
+
+    "7.3": "Time to actually set one up. Download a reputable, open-source, self-custodial mobile wallet. During setup, you'll be shown a recovery phrase — usually 12 or 24 ordinary words in a specific order.\n\nActivity: complete the Setting Up/Recovering a Bitcoin Wallet exercise now. Write your recovery phrase down on paper, never as a screenshot or a note on your phone, and store it somewhere private and safe. This phrase is the master key to your funds — anyone who has it can access everything, and if you lose it with no backup, your bitcoin is unrecoverable. There is no password reset for this.",
+
+    "7.4": "Every Bitcoin wallet has a receiving address — share this (often as a QR code) for someone to send you bitcoin. Sending works the same way in reverse: scan or paste the recipient's address, enter an amount, and confirm.\n\nActivity: work through Bitcoin Transactions in Action with a partner — send a small real amount to each other's wallets and watch it confirm. There's no substitute for doing this once yourself before it clicks.\n\nOne detail worth internalizing early: Bitcoin transactions are irreversible. Always double-check an address before confirming — there's no bank to call to undo a mistaken send.",
+
+    "7.5": "Bitcoin held for the long term, without spending it, is often called 'saving in bitcoin' or 'hodling.' Given the scarcity properties covered back in Chapter 6, many people choose to hold savings in bitcoin specifically as protection against the inflation effects covered in Chapter 5.\n\nThis isn't guaranteed or risk-free — bitcoin's price is genuinely volatile in the short term. It's a long-term position, not a guaranteed one, and worth treating with the same seriousness as any other savings decision.",
+
+    "7.6": "DYOR stands for 'Do Your Own Research' — and 'Don't Trust, Verify' is one of Bitcoin's core cultural principles, dating straight back to the Cypherpunk values covered in Chapter 5. Rather than taking any single source's word for it (including this course), you're encouraged to independently verify claims: check block explorers, read the source code, run your own node eventually.\n\nThis mindset is a feature of Bitcoin, not an inconvenience — it's the same trust-minimization idea that makes the whole system work, applied to how you personally engage with it."
+  }
+}

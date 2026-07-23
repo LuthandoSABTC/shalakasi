@@ -3,6 +3,8 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const path = require('path');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -11,12 +13,34 @@ const supabase = require('./services/supabase');
 const { decideNextStep, satoshiChatReply } = require('./services/aiEngine');
 
 const app = express();
-app.use(cors());
+
+// helmet sets sane security headers by default (X-Frame-Options, etc).
+// contentSecurityPolicy is off because it needs careful tuning against
+// the Google Fonts + inline scripts already used in public/ — worth
+// revisiting once the UI is stable rather than fighting it mid-build.
+app.use(helmet({ contentSecurityPolicy: false }));
+
+// Restrict which origins can call this API. In dev (no CORS_ORIGIN set)
+// this stays open for convenience; set CORS_ORIGIN in production (e.g.
+// on Render) to your real domain to close this down.
+app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 const JWT_SECRET = process.env.JWT_SECRET || 'shalakasi-dev-secret-change-me';
 const MASTERY_THRESHOLD = 0.75;
+
+// Brute-force protection: applies to both student and admin login.
+// 10 attempts per 15 minutes per IP is generous for a real student
+// mistyping a password, tight enough to make guessing impractical.
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many attempts — please wait a few minutes and try again.' },
+});
 
 // ---------------------------------------------------------
 // AUTH MIDDLEWARE
@@ -44,7 +68,7 @@ function requireAdmin(req, res, next) {
 // ---------------------------------------------------------
 // AUTH
 // ---------------------------------------------------------
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', loginLimiter, async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
 
@@ -264,10 +288,27 @@ app.post('/api/sections/:id/chat', requireStudent, async (req, res) => {
 // ---------------------------------------------------------
 // ADMIN — student provisioning (Luthando / Sassa)
 // ---------------------------------------------------------
+// Only failed attempts (wrong admin key) count toward this limit —
+// skipSuccessfulRequests means normal dashboard use (many successful
+// calls per session) never gets throttled, only repeated wrong-key
+// guesses do.
+const adminLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 15,
+  skipSuccessfulRequests: true,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many failed attempts — please wait a few minutes and try again.' },
+});
+app.use('/api/admin', adminLimiter);
+
 app.post('/api/admin/students', requireAdmin, async (req, res) => {
   const { username, password, full_name, cohort } = req.body;
   if (!username || !password || !full_name) {
     return res.status(400).json({ error: 'username, password, full_name required' });
+  }
+  if (password.length < 8) {
+    return res.status(400).json({ error: 'Password must be at least 8 characters.' });
   }
   const password_hash = bcrypt.hashSync(password, 10);
   const { data, error } = await supabase
@@ -278,6 +319,25 @@ app.post('/api/admin/students', requireAdmin, async (req, res) => {
 
   if (error) return res.status(400).json({ error: error.message });
   res.json({ id: data.id, username: data.username, full_name: data.full_name });
+});
+
+// Reset a student's password without touching Supabase directly —
+// also invalidates any session they're currently logged into on a
+// workstation, since JWTs are tied to nothing revocable, so a fresh
+// password is the practical way to force a re-login.
+app.patch('/api/admin/students/:id/password', requireAdmin, async (req, res) => {
+  const { password } = req.body;
+  if (!password || password.length < 8) {
+    return res.status(400).json({ error: 'Password must be at least 8 characters.' });
+  }
+  const password_hash = bcrypt.hashSync(password, 10);
+  const { error } = await supabase
+    .from('students')
+    .update({ password_hash })
+    .eq('id', req.params.id);
+
+  if (error) return res.status(400).json({ error: error.message });
+  res.json({ ok: true });
 });
 
 app.get('/api/admin/students', requireAdmin, async (req, res) => {

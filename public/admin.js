@@ -1,6 +1,7 @@
 // public/admin.js
 let adminKey = sessionStorage.getItem('shalakasi_admin_key');
 let curriculumCache = null; // { chapters: [...] } — fetched once, reused per student
+let currentDetailStudentId = null;
 
 function adminHeaders() {
   return { 'x-admin-key': adminKey, 'Content-Type': 'application/json' };
@@ -112,6 +113,19 @@ function escapeHtml(str) {
 // ---------- DETAIL PANEL ----------
 document.getElementById('detail-close').addEventListener('click', closeDetail);
 document.getElementById('overlay').addEventListener('click', closeDetail);
+document.getElementById('reset-password-btn').addEventListener('click', async () => {
+  const newPassword = prompt('New password (minimum 8 characters):');
+  if (!newPassword) return;
+  if (newPassword.length < 8) { alert('Password must be at least 8 characters.'); return; }
+
+  const res = await fetch(`/api/admin/students/${currentDetailStudentId}/password`, {
+    method: 'PATCH', headers: adminHeaders(),
+    body: JSON.stringify({ password: newPassword }),
+  });
+  const data = await res.json();
+  if (!res.ok) { alert(data.error || 'Could not reset password.'); return; }
+  alert('Password reset. The student will need to use the new password on their next login.');
+});
 document.querySelectorAll('.detail-tab').forEach((tab) => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.detail-tab').forEach((t) => t.classList.remove('active'));
@@ -127,6 +141,7 @@ function closeDetail() {
 }
 
 async function openDetail(studentId, fullName, username) {
+  currentDetailStudentId = studentId;
   document.getElementById('detail-name').textContent = fullName;
   document.getElementById('detail-meta').textContent = `@${username}`;
   document.getElementById('detail-panel').classList.add('active');

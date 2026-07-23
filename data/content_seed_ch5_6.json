@@ -1,0 +1,42 @@
+{
+  "_readme": "content_md for Chapters 5-6. Sassa: treat this as a first draft, not final — revise freely, especially the South Africa-specific examples, to match what you know actually lands with students in the room.",
+  "sections": {
+    "5.0": "The last two chapters described how fiat money works. This chapter asks a harder question: what does that system actually cost the people using it?\n\nThis isn't abstract. The effects show up in a taxi fare that's gone up again, in a stokvel payout that buys less than it used to, in a family struggling to save no matter how disciplined they are. This chapter names those effects clearly, and shows you the community of people who first organized a serious response.",
+
+    "5.1": "When new money is created faster than the economy grows, each existing unit of that money buys a little less. This is inflation — and it's not a natural weather event, it's a direct consequence of the fractional reserve and central bank policies covered in Chapter 4.\n\nThe painful part is that inflation doesn't hit everyone equally. People holding cash or fixed savings lose purchasing power steadily. People who receive newly created money first — banks, large institutions, asset owners — benefit before prices catch up. Ordinary savers are almost always on the losing side of that timing.",
+
+    "5.1.1": "A simple way to feel this: imagine R100 today buys a basket of groceries. If prices rise 10% a year, that same basket costs R110 next year, then R121 the year after — even though your R100 note looks identical.\n\nActivity: try the Effects of Inflation Auction with your group. Watching the same starting amount of 'money' lose real bidding power round after round makes the abstract idea concrete fast.",
+
+    "5.2": "Inflation isn't the only strain on ordinary people in a fiat system. Two connected problems compound it: growing debt at every level of the economy, and a widening gap between those who hold assets and those who don't.",
+
+    "5.2.1": "For an individual, the effect of ongoing inflation is straightforward but serious: money saved under a mattress, or even in a standard bank account, quietly loses value every year it sits there. People who can't afford to buy appreciating assets — property, stocks, Bitcoin — have no way to protect their savings from this erosion. Working harder doesn't fix a problem built into the money itself.",
+
+    "5.2.2": "At a societal level, the same mechanism widens inequality over time. Asset owners see the price of what they hold rise alongside the money supply, often faster than wages rise for people who don't own assets. The gap between those two groups tends to grow, not because of differences in effort, but because of where each group stood relative to newly created money.\n\nActivity: work through Consequences of the Fiat System with your group — mapping out concretely who gains and who loses at each stage makes this far less abstract.",
+
+    "5.2.3": "Governments themselves aren't immune to this dynamic — many carry debt loads that have grown for decades, often serviced by creating more currency rather than fully paying it down. That, in turn, feeds back into the inflation problem covered above. It's a cycle, not an isolated issue.",
+
+    "5.3": "By the late 20th century, a loose community of technologists, cryptographers, and privacy advocates had identified these problems clearly and started asking a pointed question: could money be redesigned so that no single institution held this much power over it?",
+
+    "5.3.1": "This community became known as the Cypherpunks. Beginning in the late 1980s and through the 1990s, they argued that privacy and financial freedom in the digital age would require strong cryptography — tools that didn't depend on trusting a bank, government, or company to behave well.\n\nMany of the technical building blocks Bitcoin would later use were first proposed and debated inside this community, years before Bitcoin existed.",
+
+    "5.3.2": "A centralized system has one party (or a small group) making the decisions — creating money, approving transactions, freezing accounts. A decentralized system spreads that authority across many independent participants, with no single point that can unilaterally change the rules or block someone else's transaction.\n\nThis distinction is the thread that connects everything so far to what comes next: Bitcoin is, at its core, an attempt to make money decentralized in exactly this sense.",
+
+    "5.3.3": "Several attempts at digital cash predate Bitcoin — DigiCash, e-gold, b-money, and others. Each solved part of the puzzle but ran into the same wall: without a decentralized way to prevent someone from spending the same digital money twice (called the 'double-spend problem'), digital cash kept needing a trusted central party after all — defeating the point.\n\nThat unsolved problem is exactly where Chapter 6 picks up.",
+
+    "6.0": "In October 2008, a paper titled 'Bitcoin: A Peer-to-Peer Electronic Cash System' was published under the pseudonym Satoshi Nakamoto — no one knows their real identity to this day. It proposed a solution to the double-spend problem that had stumped every earlier attempt at digital cash, without requiring a trusted central party.\n\nThe first Bitcoin block was mined in January 2009. Everything this Diploma has built toward — sound money's properties, the failures of fiat, the Cypherpunks' goals — converges here.",
+
+    "6.1": "Bitcoin solves the double-spend problem using a public, shared record of every transaction ever made, called the blockchain. Instead of one company keeping the official ledger, thousands of independent computers around the world each keep an identical copy and agree on updates together.",
+
+    "6.1.1": "Getting thousands of independent, mutually distrusting computers to agree on a single shared history is a genuinely hard problem. Bitcoin's answer is called Proof-of-Work, part of what's known as the Nakamoto Consensus.\n\nParticipants ('miners') compete to solve a computationally expensive puzzle. Whoever solves it first gets to propose the next batch of transactions, and is rewarded with newly created bitcoin for the effort. This makes it expensive to cheat and cheap to verify — the core trick that makes decentralized agreement possible.",
+
+    "6.1.2": "Several distinct groups keep this system running honestly, each with their own incentives: miners (who secure the network and earn rewards), full nodes (which independently verify every rule is followed, run by anyone), developers (who propose and refine the software), and everyday users (who choose which rules they'll accept by choosing which software to run).\n\nActivity: the Consensus Building activity has your group physically act out how these roles interact — it makes the abstract incentive structure click faster than reading about it.",
+
+    "6.2": "Chapter 2 laid out the properties good money needs: durability, portability, divisibility, scarcity, fungibility, recognizability. This section asks directly — does Bitcoin actually have them?",
+
+    "6.2.1": "Unlike gold or fiat currency, Bitcoin was designed from scratch with these properties as explicit goals, informed by everything that came before it — including where those earlier forms of money fell short.",
+
+    "6.2.2": "Bitcoin is digitally durable (the network hasn't gone down since 2009), extremely portable (send any amount, anywhere, without physically moving anything), divisible to 8 decimal places (down to a single satoshi, 0.00000001 BTC), and provably scarce — a maximum supply of 21 million coins is enforced by the software every participant runs, not by anyone's promise.\n\nActivity: have the class discussion on whether Bitcoin qualifies as sound money — there's genuine, well-argued disagreement on some of these points worth exploring directly rather than taking as settled.",
+
+    "6.2.3": "Bitcoin's design removes the need to trust a central authority — but it replaces that with a different kind of responsibility: yours. There's no bank to call if you lose your private keys or send to the wrong address; no customer service line to reverse a mistake.\n\nThis is a genuine tradeoff, not a small footnote. Chapter 7 covers exactly how to hold and use Bitcoin safely, because this personal responsibility is the part most new users underestimate."
+  }
+}
