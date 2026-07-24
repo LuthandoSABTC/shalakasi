@@ -20,7 +20,16 @@ function authHeaders() {
 // the buttons entirely on browsers/devices that don't support it
 // (all mainstream desktop browsers do).
 const speechSupported = 'speechSynthesis' in window;
-let currentUtterance = null;
+
+function splitIntoSentences(text) {
+  // Split on sentence-ending punctuation, keep the punctuation attached.
+  // Feeding short chunks instead of one giant block avoids Chrome's
+  // long-utterance bug (silent delay before starting, or cutting off
+  // partway through on longer sections) and starts speaking almost
+  // instantly instead of waiting on the whole text to process.
+  const matches = text.match(/[^.!?]+[.!?]+["')\]]?|\s*[^.!?]+$/g);
+  return (matches || [text]).map((s) => s.trim()).filter(Boolean);
+}
 
 function speakText(text, btn) {
   if (!speechSupported) return;
@@ -31,18 +40,26 @@ function speakText(text, btn) {
     return;
   }
 
-  window.speechSynthesis.cancel(); // stop anything else currently reading
-  const utterance = new SpeechSynthesisUtterance(stripHtmlForSpeech(text));
-  utterance.rate = 0.95;
-  currentUtterance = utterance;
+  window.speechSynthesis.cancel(); // stop anything else currently reading, clears any queue
+
+  const sentences = splitIntoSentences(stripHtmlForSpeech(text));
+  if (!sentences.length) return;
 
   document.querySelectorAll('[data-speaking="true"]').forEach((b) => setSpeakingState(b, false));
   if (btn) setSpeakingState(btn, true);
 
-  utterance.onend = () => { if (btn) setSpeakingState(btn, false); };
-  utterance.onerror = () => { if (btn) setSpeakingState(btn, false); };
-
-  window.speechSynthesis.speak(utterance);
+  sentences.forEach((sentence, i) => {
+    const utterance = new SpeechSynthesisUtterance(sentence);
+    utterance.rate = 0.95;
+    const isLast = i === sentences.length - 1;
+    // Only the last chunk resets the button — earlier ones finishing
+    // just move on to the next queued sentence automatically.
+    if (isLast) {
+      utterance.onend = () => { if (btn) setSpeakingState(btn, false); };
+      utterance.onerror = () => { if (btn) setSpeakingState(btn, false); };
+    }
+    window.speechSynthesis.speak(utterance); // queues in order — browser plays them back to back
+  });
 }
 
 function setSpeakingState(btn, speaking) {

@@ -1,0 +1,385 @@
+{
+  "_readme": "Closes the checkpoint gap identified across Chapters 2-9. Intentionally NOT covered here (matching the pattern already used for 1.0/1.1/1.2/2.0/3.0/etc.): chapter intro sections and pure class-discussion sections, which don't carry new factual content to check.",
+  "quizzes": [
+    {
+      "section_number": "2.2",
+      "question": "Which of the following is NOT one of the three jobs money does, according to this section?",
+      "options": ["Medium of exchange", "Unit of account", "Guarantee of employment"],
+      "correct_index": 2,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "2.4",
+      "question": "What distinguishes 'representative money' from 'commodity money'?",
+      "options": [
+        "Representative money is a claim on a commodity held elsewhere, rather than having value from the material itself",
+        "Representative money can only be used online",
+        "There is no real difference between the two"
+      ],
+      "correct_index": 0,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "2.5",
+      "question": "According to this section, what does money that reliably holds its value tend to encourage?",
+      "options": ["Immediate spending over saving", "Saving and long-term thinking, since patience isn't punished by lost value", "Higher time preference across the board"],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "3.1.1",
+      "question": "Why did shells sometimes fail as a form of early money?",
+      "options": ["They were too heavy to carry", "They could sometimes be found too easily nearby, undermining their scarcity", "They were illegal in most societies"],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "3.1.4",
+      "question": "What tradeoff does this section highlight in the shift from cash to cards and phone-based money?",
+      "options": [
+        "Cards are always more expensive to use than cash",
+        "Access to your own money now depends entirely on a bank's systems and permission",
+        "There is no real tradeoff — it's a pure improvement"
+      ],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "3.2",
+      "question": "What's actually new about the kind of digital currency Bitcoin represents, compared to digital bank ledgers that already existed?",
+      "options": [
+        "Digital money that doesn't depend on any single company or government to issue or control it",
+        "Bitcoin was the first digital record of any kind",
+        "Bitcoin removed the need for the internet"
+      ],
+      "correct_index": 0,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "4.2",
+      "question": "What institutions typically hold the authority to create new money in a fiat system?",
+      "options": ["Individual citizens by majority vote", "A central bank and government treasury", "Any registered business"],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "4.2.1",
+      "question": "What determines the money supply in a fiat system, according to this section?",
+      "options": ["A fixed mathematical formula nobody can change", "Policy decisions made by central banking institutions", "The total weight of gold held in national reserves"],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "4.3",
+      "question": "How does a CBDC differ from the digital money most people already use today?",
+      "options": [
+        "It would be issued and controlled directly by a central bank, rather than existing as commercial bank deposits",
+        "It cannot be spent online",
+        "It is identical to Bitcoin in every respect"
+      ],
+      "correct_index": 0,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "5.1.1",
+      "question": "In the example given, what happens to a R100 grocery basket after two years of 10% annual inflation?",
+      "options": ["It stays at R100", "It costs R121", "It costs exactly R120"],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "5.2",
+      "question": "What two connected problems does this section say compound the effects of inflation?",
+      "options": [
+        "Growing debt at every level of the economy, and a widening wealth gap between asset owners and non-owners",
+        "Rising unemployment and falling literacy rates",
+        "Higher taxes and slower internet speeds"
+      ],
+      "correct_index": 0,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "5.2.1",
+      "question": "Why can't people who don't own appreciating assets protect their savings from inflation, according to this section?",
+      "options": [
+        "They can, easily, by working harder",
+        "Money saved in cash or a standard bank account quietly loses value each year, with no built-in protection",
+        "Only wealthy people are affected by inflation at all"
+      ],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "5.2.3",
+      "question": "How do many governments service large, growing debt loads, according to this section?",
+      "options": ["By fully paying it down within a year", "Often by creating more currency, which feeds back into the inflation problem", "Debt is not a real issue for governments"],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "5.3",
+      "question": "What core question did the community described in this section start asking?",
+      "options": [
+        "Could money be redesigned so no single institution held this much power over it?",
+        "How can banks be made more profitable?",
+        "Should gold replace paper currency again?"
+      ],
+      "correct_index": 0,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "5.3.1",
+      "question": "What did the Cypherpunks argue was required for privacy and financial freedom in the digital age?",
+      "options": ["Government oversight of all transactions", "Strong cryptography that didn't depend on trusting a bank, government, or company to behave well", "A return to purely physical cash"],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "5.3.2",
+      "question": "What is the key difference between a centralized and a decentralized system, as described here?",
+      "options": [
+        "A centralized system has one party making decisions; a decentralized system spreads that authority across many independent participants",
+        "Decentralized systems are always faster than centralized ones",
+        "There is no meaningful difference"
+      ],
+      "correct_index": 0,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "6.0",
+      "question": "Under what name was the Bitcoin whitepaper published in October 2008?",
+      "options": ["Craig Wright", "Satoshi Nakamoto, a pseudonym — the real identity remains unknown", "The Cypherpunk Collective"],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "6.1",
+      "question": "How does Bitcoin's blockchain differ from a traditional bank's ledger?",
+      "options": [
+        "Thousands of independent computers each keep an identical copy and agree on updates together, instead of one company keeping the official record",
+        "It is kept by a single, government-appointed company",
+        "It only exists on paper"
+      ],
+      "correct_index": 0,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "6.1.2",
+      "question": "Which group is responsible for independently verifying that Bitcoin's rules are being followed?",
+      "options": ["Miners only", "Full nodes", "Central banks"],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "6.2",
+      "question": "What question does this section ask directly, building on Chapter 2?",
+      "options": [
+        "Does Bitcoin actually have the properties of good money?",
+        "Is gold better than Bitcoin in every way?",
+        "Should Bitcoin be banned?"
+      ],
+      "correct_index": 0,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "6.2.1",
+      "question": "How was Bitcoin's design approach to sound-money properties different from gold's?",
+      "options": [
+        "Bitcoin was designed from scratch with these properties as explicit goals, informed by where earlier forms of money fell short",
+        "Bitcoin ignored the properties of sound money entirely",
+        "Gold and Bitcoin were designed by the same process"
+      ],
+      "correct_index": 0,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "7.1",
+      "question": "What is the main tradeoff to weigh across the three ways of acquiring bitcoin covered in this section?",
+      "options": ["Speed, privacy, and how much you need to trust a third party", "Only the color of the app icon", "There is no meaningful difference between them"],
+      "correct_index": 0,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "7.1.1",
+      "question": "Why might physical peer-to-peer trading be an accessible entry point in a community like Ekasi?",
+      "options": [
+        "It doesn't require a bank account or ID verification with a distant company",
+        "It is the only legal way to acquire bitcoin",
+        "It requires owning a centralized exchange account first"
+      ],
+      "correct_index": 0,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "7.1.2",
+      "question": "What protects both sides during an online peer-to-peer bitcoin trade?",
+      "options": ["Nothing — it is entirely based on trust", "Escrow services", "A government regulator"],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "7.2",
+      "question": "What does a Bitcoin wallet actually hold, according to this section?",
+      "options": [
+        "Physical bitcoin coins",
+        "The private keys that prove you control certain bitcoin recorded on the blockchain",
+        "A copy of the entire blockchain"
+      ],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "7.2.2",
+      "question": "What's the main difference between on-chain and Lightning wallets?",
+      "options": [
+        "On-chain wallets deal directly with the base blockchain (better for savings); Lightning wallets use a faster, cheaper layer for everyday spending",
+        "Lightning wallets cannot receive any bitcoin",
+        "On-chain wallets are always custodial"
+      ],
+      "correct_index": 0,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "7.2.3",
+      "question": "Why does open-source wallet software matter, according to this section?",
+      "options": [
+        "It's required by law in most countries",
+        "The code is publicly available for anyone to inspect and verify, rather than requiring trust in the developer's word",
+        "It makes wallets load faster"
+      ],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "7.5",
+      "question": "Why does this section stress that saving in bitcoin isn't risk-free?",
+      "options": [
+        "Because bitcoin's price is genuinely volatile in the short term, even though many treat it as long-term protection against inflation",
+        "Because bitcoin cannot legally be saved",
+        "Because it's actually completely risk-free"
+      ],
+      "correct_index": 0,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "7.6",
+      "question": "What does 'Don't Trust, Verify' mean in practice, according to this section?",
+      "options": [
+        "Independently verifying claims yourself — checking block explorers, reading source code — rather than taking any single source's word for it",
+        "Never using a Bitcoin wallet without government approval",
+        "Trusting only Bitcoin Ekasi's official statements"
+      ],
+      "correct_index": 0,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "8.2",
+      "question": "What determines the different 'flavors' of Lightning wallets, according to this section?",
+      "options": ["Who holds the keys and channels", "The wallet's color scheme", "Which country issued them"],
+      "correct_index": 0,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "8.2.2",
+      "question": "What does open-source Lightning wallet software allow, same as in Chapter 7?",
+      "options": ["The community can verify the code actually does what it claims", "It removes the need for any wallet at all", "It guarantees the wallet is custodial"],
+      "correct_index": 0,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "8.3",
+      "question": "Why might someone start with a custodial Lightning wallet before moving to self-custody?",
+      "options": [
+        "Custodial setups are typically much simpler, while self-custodial ones involve managing channel liquidity and backups",
+        "Self-custodial wallets are illegal for beginners",
+        "There is no difference in setup complexity"
+      ],
+      "correct_index": 0,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "8.4",
+      "question": "What is a Lightning 'invoice'?",
+      "options": [
+        "A QR code generated by the receiver that the sender scans to pay",
+        "A monthly bill for using Bitcoin",
+        "A government tax form"
+      ],
+      "correct_index": 0,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "8.5.1",
+      "question": "What advantage does a Lightning payment plugin give an online merchant, according to this section?",
+      "options": [
+        "Near-instant payment with no chargeback risk",
+        "Automatic tax exemption",
+        "Free advertising from the payment processor"
+      ],
+      "correct_index": 0,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "8.5.2",
+      "question": "How many merchants does Bitcoin Ekasi's EkasiPay network cover across Mossel Bay, according to this section?",
+      "options": ["12", "65", "200"],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "8.5.3",
+      "question": "What role do Bitcoin-linked gift cards and prepaid cards play, according to this section?",
+      "options": [
+        "A bridge for people still getting comfortable with Lightning directly",
+        "They replace Lightning wallets entirely",
+        "They are only usable outside South Africa"
+      ],
+      "correct_index": 0,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "9.1",
+      "question": "What does the pairing of public and private keys make possible, according to this section?",
+      "options": [
+        "Self-custody without needing a central authority to verify who owns what",
+        "Unlimited free transactions",
+        "Automatic recovery of a lost wallet"
+      ],
+      "correct_index": 0,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "9.3",
+      "question": "What is the key difference between a node and a miner, according to this section?",
+      "options": [
+        "Nodes verify that rules are followed; miners propose new blocks of transactions — distinct roles, even if one computer can do both",
+        "They are exactly the same thing with two different names",
+        "Only miners are allowed to hold bitcoin"
+      ],
+      "correct_index": 0,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "9.3.2",
+      "question": "What happens to Bitcoin's mining difficulty roughly every two weeks?",
+      "options": [
+        "It resets to zero",
+        "It adjusts automatically to keep new blocks arriving about every 10 minutes, regardless of total mining power",
+        "It is set manually by a vote among miners"
+      ],
+      "correct_index": 1,
+      "difficulty": "stretch"
+    },
+    {
+      "section_number": "9.5",
+      "question": "According to this section, what must happen before a block is accepted into the blockchain?",
+      "options": [
+        "Every node must independently verify the block follows every rule",
+        "Only the miner who created it needs to approve it",
+        "A central authority must sign off on it"
+      ],
+      "correct_index": 0,
+      "difficulty": "core"
+    }
+  ]
+}
