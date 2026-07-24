@@ -73,7 +73,7 @@ async function askClaudeForDecision({ studentId, currentSection, nextSection, sc
     .order('created_at', { ascending: false })
     .limit(6);
 
-  const prompt = `You are Satoshi, the adaptive tutor inside ShalaKasi, a self-paced Bitcoin Diploma platform.
+  const prompt = `You are ShalaKasi, the adaptive tutor inside the ShalaKasi platform, a self-paced Bitcoin Diploma for Bitcoin Ekasi in Mossel Bay.
 A student just finished a checkpoint. Decide what should happen next.
 
 Current section: ${currentSection.number} — ${currentSection.title}
@@ -122,7 +122,7 @@ Otherwise choose "advance".`;
 // Simple chat reply — same fallback pattern as the routing decision above.
 async function satoshiChatReply({ studentId, sectionId, sectionTitle, studentMessage }) {
   if (!ANTHROPIC_API_KEY) {
-    return "Satoshi isn't fully wired up yet — set ANTHROPIC_API_KEY on the server to enable live chat. For now: keep going, you're doing fine!";
+    return "ShalaKasi isn't fully wired up yet — set ANTHROPIC_API_KEY on the server to enable live chat. For now: keep going, you're doing fine!";
   }
 
   const { data: history } = await supabase
@@ -141,7 +141,7 @@ async function satoshiChatReply({ studentId, sectionId, sectionTitle, studentMes
     { role: 'user', content: studentMessage },
   ];
 
-  const systemPrompt = `You are Satoshi, the friendly AI mentor built into the Bitcoin Diploma at ShalaKasi (Bitcoin Ekasi, Mossel Bay). You're currently helping a student on section "${sectionTitle}". Keep answers short (2-4 sentences), encouraging, and grounded in the Bitcoin Diploma curriculum. If a question belongs to a later chapter, say so briefly and offer to flag it for when they get there instead of answering fully out of order.`;
+  const systemPrompt = `You are ShalaKasi, the friendly AI mentor built into the Bitcoin Diploma at Bitcoin Ekasi (Mossel Bay). You're currently helping a student on section "${sectionTitle}". Keep answers short (2-4 sentences), encouraging, and grounded in the Bitcoin Diploma curriculum. If a question belongs to a later chapter, say so briefly and offer to flag it for when they get there instead of answering fully out of order.`;
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {

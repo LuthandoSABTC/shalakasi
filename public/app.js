@@ -14,7 +14,7 @@ function authHeaders() {
   return { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
 }
 
-// ---------- VOICE (Satoshi read-aloud) ----------
+// ---------- VOICE (ShalaKasi read-aloud) ----------
 // Uses the browser's built-in speech synthesis — no API key, no cost,
 // works even before ANTHROPIC_API_KEY is set. Falls back to hiding
 // the buttons entirely on browsers/devices that don't support it
@@ -82,7 +82,7 @@ function stripHtmlForSpeech(html) {
 }
 
 // Stop any speech in progress when navigating away — a student switching
-// from Course to Satoshi shouldn't have the old section still narrating.
+// from Course to ShalaKasi shouldn't have the old section still narrating.
 function stopSpeech() {
   if (speechSupported) window.speechSynthesis.cancel();
 }
@@ -196,7 +196,7 @@ function showView(name) {
   document.querySelectorAll('.rail-btn').forEach((b) => b.classList.remove('active'));
   document.querySelector(`.rail-btn[data-view="${name}"]`).classList.add('active');
 
-  const titles = { course: 'Course', satoshi: 'Ask <b>Satoshi</b>', dashboard: '<b>Your Progress</b>' };
+  const titles = { course: 'Course', satoshi: 'Ask <b>ShalaKasi</b>', dashboard: '<b>Your Progress</b>' };
   document.getElementById('topbar-title').innerHTML = titles[name];
 
   if (name === 'satoshi') loadChat();
@@ -248,10 +248,10 @@ async function loadSection(sectionId, chapterNumber, chapterTitle) {
     ${data.section.activity_title ? `<div class="activity-badge">✦ Activity: ${data.section.activity_title}</div>` : ''}
     <div class="satoshi-intro">
       <div class="satoshi-avatar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B0D10" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M9.5 10.8c0-.5.4-.9.9-.9s.9.4.9.9M12.7 10.8c0-.5.4-.9.9-.9s.9.4.9.9"/><path d="M9.5 14c.9.9 4.1.9 5 0"/></svg></div>
-      <p><b>Satoshi:</b> Take your time on this one — you can always ask me if something doesn't click.</p>
+      <p><b>ShalaKasi:</b> Take your time on this one — you can always ask me if something doesn't click.</p>
     </div>
     ${speechSupported ? '<button class="listen-btn" id="listen-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M19 12a7 7 0 0 0-4-6.3M16 12a4 4 0 0 0-2-3.5"/></svg> Listen</button>' : ''}
-    <div class="body-text">${(data.section.content_md || 'Content for this section is being written by Sassa — check back soon, or ask Satoshi to walk you through it in the meantime.').replace(/\n/g, '<br>')}</div>
+    <div class="body-text">${(data.section.content_md || 'Content for this section is being written by Sassa — check back soon, or ask ShalaKasi to walk you through it in the meantime.').replace(/\n/g, '<br>')}</div>
     <div id="live-widget-slot"></div>
     <div id="checkpoint-slot"></div>
   `;
@@ -399,7 +399,7 @@ async function submitAnswer(quizId, selectedIndex) {
     document.getElementById('next-q').addEventListener('click', renderCheckpoint);
   } else if (data.decision) {
     decisionSlot.innerHTML = `
-      <div class="decision-note">💡 <span><b>Satoshi:</b> ${data.decision.reasoning}</span></div>
+      <div class="decision-note">💡 <span><b>ShalaKasi:</b> ${data.decision.reasoning}</span></div>
       <button class="continue-btn" id="continue-btn">Continue</button>`;
     document.getElementById('continue-btn').addEventListener('click', loadNextSection);
   }
@@ -412,7 +412,7 @@ async function loadChat() {
   const data = await res.json();
   const scroll = document.getElementById('chat-scroll');
   scroll.innerHTML = data.messages.map(renderMsg).join('') ||
-    `<div class="msg from-satoshi">${avatarHtml()}<div><div class="msg-name">Satoshi</div><div class="msg-bubble">Hey! Ask me anything about this section.</div></div></div>`;
+    `<div class="msg from-satoshi">${avatarHtml()}<div><div class="msg-name">ShalaKasi</div><div class="msg-bubble">Hey! Ask me anything about this section.</div></div></div>`;
   scroll.scrollTop = scroll.scrollHeight;
 }
 
@@ -423,7 +423,7 @@ function renderMsg(m) {
     : '';
   return `<div class="msg ${isSat ? 'from-satoshi' : 'from-student'}">
     ${isSat ? avatarHtml() : `<div class="msg-avatar">${(student.full_name || '?')[0]}</div>`}
-    <div><div class="msg-name">${isSat ? 'Satoshi' : 'You'}${speakBtn}</div><div class="msg-bubble">${m.message}</div></div>
+    <div><div class="msg-name">${isSat ? 'ShalaKasi' : 'You'}${speakBtn}</div><div class="msg-bubble">${m.message}</div></div>
   </div>`;
 }
 function avatarHtml() {
@@ -470,7 +470,7 @@ async function loadDashboard() {
 
   el.innerHTML = `
     <h1 class="dash-title">${student.full_name}'s progress</h1>
-    <p class="dash-sub">${masteredSections} of ${totalSections} sections mastered · Satoshi is building this path as you go, not following a fixed order.</p>
+    <p class="dash-sub">${masteredSections} of ${totalSections} sections mastered · ShalaKasi is building this path as you go, not following a fixed order.</p>
     ${data.chapters.map((ch) => `
       <div class="chapter-card">
         <div class="chapter-card-head">

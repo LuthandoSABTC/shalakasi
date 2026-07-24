@@ -1,0 +1,103 @@
+{
+  "_readme": "Closes every remaining gap, including chapter intros and discussion sections. For discussion-style sections (1.2, 10.2, 10.4) the question checks comprehension of the section's own framing rather than asking for a personal opinion, since opinions can't be graded right/wrong.",
+  "quizzes": [
+    {
+      "section_number": "1.0",
+      "question": "Who — or what — is ShalaKasi, as introduced in this section?",
+      "options": ["A real teacher who visits in person once a week", "An AI mentor built into the platform, here to guide you through the Diploma", "A textbook chapter title"],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "1.1",
+      "question": "What does ShalaKasi say it will help with throughout the Diploma?",
+      "options": ["Explaining ideas differently when something doesn't click, and tracking where you're strong or need another pass", "Grading attendance only", "Replacing Sassa and Bongani entirely"],
+      "correct_index": 0,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "1.2",
+      "question": "What is the actual goal of this class discussion, according to the section itself?",
+      "options": ["To reach one single correct answer everyone must agree on", "To notice that money is stranger and more designed than it first appears", "To memorize a list of definitions"],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "2.0",
+      "question": "What question does this section say we're going 'one level deeper' into, compared to Chapter 1?",
+      "options": ["Why money is necessary", "What money actually is", "How to mine Bitcoin"],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "3.0",
+      "question": "What is this chapter's overall path, as described in the introduction?",
+      "options": ["From direct trade between people, all the way to the card or app you use now", "From Bitcoin back to gold", "From mining to spending, skipping history entirely"],
+      "correct_index": 0,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "4.0",
+      "question": "What does the word 'fiat' mean, as explained in this section?",
+      "options": ["A type of car", "Roughly 'let it be done' in Latin — a decree", "A synonym for gold"],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "5.0",
+      "question": "According to this section, where do the effects of the fiat system actually show up?",
+      "options": ["Only in economics textbooks, not real life", "In everyday things like a rising taxi fare or a stokvel payout buying less than before", "Nowhere — the effects are purely theoretical"],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "7.0",
+      "question": "What does this chapter promise you'll actually do, not just read about?",
+      "options": ["Mine a Bitcoin block", "Set up a wallet and send a real transaction", "Write Bitcoin's source code"],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "8.0",
+      "question": "Why was the Lightning Network built on top of Bitcoin, according to this section?",
+      "options": ["To replace Bitcoin entirely", "To make small, fast, cheap everyday payments practical, since the base blockchain is slower and costlier for that", "To make Bitcoin more expensive to use"],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "8.5",
+      "question": "What does this section say Lightning's speed and low fees make practical?",
+      "options": ["Only large business-to-business transfers", "Genuine everyday spending, like buying coffee or groceries", "Nothing new compared to the base blockchain"],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "9.0",
+      "question": "Does this chapter require you to become a programmer, according to its introduction?",
+      "options": ["Yes, coding is required to continue", "No — but understanding the mechanics makes you a more confident, self-sufficient user", "Only if you plan to become a miner"],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "10.0",
+      "question": "What bigger question has the whole Diploma been building toward, according to this closing chapter's introduction?",
+      "options": ["Why any of this actually matters for your own life", "How to write a Bitcoin whitepaper", "Which wallet brand is the best"],
+      "correct_index": 0,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "10.2",
+      "question": "According to this section, what does Bitcoin do to the real tensions around control of money (privacy vs. crime-fighting, control vs. safety nets)?",
+      "options": ["It fully resolves all of them", "It shifts who is responsible for navigating them, rather than resolving them", "It has no effect on these tensions at all"],
+      "correct_index": 1,
+      "difficulty": "core"
+    },
+    {
+      "section_number": "10.4",
+      "question": "According to this closing section, what was the actual outcome this Diploma was built to create?",
+      "options": ["Memorizing Bitcoin's full source code", "A shift in perspective — understanding money could be different, with the tools to participate in that difference", "Passing a final written exam"],
+      "correct_index": 1,
+      "difficulty": "core"
+    }
+  ]
+}
