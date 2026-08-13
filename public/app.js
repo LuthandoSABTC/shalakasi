@@ -1,47 +1,31 @@
 // public/app.js
-// sessionStorage (not localStorage) on purpose — these are shared
-// kiosk workstations, the token should not survive a browser restart
-// or persist for the next student who sits down.
-
 const API = '';
 let token = sessionStorage.getItem('shalakasi_token');
 let student = JSON.parse(sessionStorage.getItem('shalakasi_student') || 'null');
 let currentSectionId = null;
 let currentQuiz = [];
 let quizIndex = 0;
+let bookCache = null;
 
 function authHeaders() {
   return { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
 }
 
 // ---------- VOICE (ShalaKasi read-aloud) ----------
-// Uses the browser's built-in speech synthesis — no API key, no cost,
-// works even before ANTHROPIC_API_KEY is set. Falls back to hiding
-// the buttons entirely on browsers/devices that don't support it
-// (all mainstream desktop browsers do).
 const speechSupported = 'speechSynthesis' in window;
 
 function splitIntoSentences(text) {
-  // Split on sentence-ending punctuation, keep the punctuation attached.
-  // Feeding short chunks instead of one giant block avoids Chrome's
-  // long-utterance bug (silent delay before starting, or cutting off
-  // partway through on longer sections) and starts speaking almost
-  // instantly instead of waiting on the whole text to process.
   const matches = text.match(/[^.!?]+[.!?]+["')\]]?|\s*[^.!?]+$/g);
   return (matches || [text]).map((s) => s.trim()).filter(Boolean);
 }
 
 function speakText(text, btn) {
   if (!speechSupported) return;
-
-  // If this exact button is already speaking, treat the click as "stop."
   if (btn && btn.dataset.speaking === 'true') {
     window.speechSynthesis.cancel();
     return;
   }
-
-  window.speechSynthesis.cancel(); // stop anything else currently reading, clears any queue
-
+  window.speechSynthesis.cancel();
   const sentences = splitIntoSentences(stripHtmlForSpeech(text));
   if (!sentences.length) return;
 
@@ -52,13 +36,11 @@ function speakText(text, btn) {
     const utterance = new SpeechSynthesisUtterance(sentence);
     utterance.rate = 0.95;
     const isLast = i === sentences.length - 1;
-    // Only the last chunk resets the button — earlier ones finishing
-    // just move on to the next queued sentence automatically.
     if (isLast) {
       utterance.onend = () => { if (btn) setSpeakingState(btn, false); };
       utterance.onerror = () => { if (btn) setSpeakingState(btn, false); };
     }
-    window.speechSynthesis.speak(utterance); // queues in order — browser plays them back to back
+    window.speechSynthesis.speak(utterance);
   });
 }
 
@@ -67,11 +49,10 @@ function setSpeakingState(btn, speaking) {
   btn.classList.toggle('speaking', speaking);
   const stopIcon = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>';
   const playIcon = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M19 12a7 7 0 0 0-4-6.3M16 12a4 4 0 0 0-2-3.5"/></svg>';
-
   if (btn.classList.contains('listen-btn')) {
     btn.innerHTML = speaking ? `${stopIcon} Stop` : `${playIcon} Listen`;
   } else {
-    btn.innerHTML = speaking ? stopIcon : playIcon; // compact chat buttons — icon only
+    btn.innerHTML = speaking ? stopIcon : playIcon;
   }
 }
 
@@ -81,8 +62,6 @@ function stripHtmlForSpeech(html) {
   return div.textContent || div.innerText || '';
 }
 
-// Stop any speech in progress when navigating away — a student switching
-// from Course to ShalaKasi shouldn't have the old section still narrating.
 function stopSpeech() {
   if (speechSupported) window.speechSynthesis.cancel();
 }
@@ -146,14 +125,11 @@ function enterApp() {
 }
 
 // ---------- BTC/ZAR PRICE TICKER ----------
-// CoinGecko's free public API, fetched directly from the browser —
-// no key, no cost. Refreshes every 60s while logged in; the interval
-// is cleared on logout so it doesn't keep silently running/stacking.
 let priceTickerInterval = null;
 
 function startPriceTicker() {
   fetchPrice();
-  stopPriceTicker(); // clear any previous interval before starting a fresh one
+  stopPriceTicker();
   priceTickerInterval = setInterval(fetchPrice, 60_000);
 }
 
@@ -196,11 +172,12 @@ function showView(name) {
   document.querySelectorAll('.rail-btn').forEach((b) => b.classList.remove('active'));
   document.querySelector(`.rail-btn[data-view="${name}"]`).classList.add('active');
 
-  const titles = { course: 'Course', satoshi: 'Ask <b>ShalaKasi</b>', dashboard: '<b>Your Progress</b>' };
+  const titles = { course: 'Course', book: '<b>The Book</b>', satoshi: 'Ask <b>ShalaKasi</b>', dashboard: '<b>Your Progress</b>' };
   document.getElementById('topbar-title').innerHTML = titles[name];
 
   if (name === 'satoshi') loadChat();
   if (name === 'dashboard') loadDashboard();
+  if (name === 'book') loadBook();
 }
 
 document.getElementById('ask-satoshi-fab').addEventListener('click', () => showView('satoshi'));
@@ -270,15 +247,7 @@ async function loadSection(sectionId, chapterNumber, chapterTitle) {
 }
 
 // ---------- LIVE BITCOIN NETWORK WIDGET (Chapter 9) ----------
-// Pulls real, current data from mempool.space's free public API,
-// fetched directly from the student's browser — no backend involved,
-// no API key, no cost. Shown only on the sections where it's actually
-// relevant to what's being taught, not on every page.
-const MEMPOOL_WIDGET_SECTIONS = {
-  '9.3.2': 'blocks',   // mining section — show block height / timing
-  '9.4': 'mempool',    // mempool section — show pending tx + fees
-  '9.5': 'both',       // full flow — show everything
-};
+const MEMPOOL_WIDGET_SECTIONS = { '9.3.2': 'blocks', '9.4': 'mempool', '9.5': 'both' };
 
 async function loadLiveBitcoinWidget(sectionNumber) {
   const mode = MEMPOOL_WIDGET_SECTIONS[sectionNumber];
@@ -305,34 +274,17 @@ async function loadLiveBitcoinWidget(sectionNumber) {
     if (mode === 'both') [height, hash, mempoolStats, fees] = results;
 
     let html = `<div class="live-widget">
-      <div class="live-widget-head">
-        <span class="live-dot"></span> Live from the Bitcoin network right now
-      </div>
+      <div class="live-widget-head"><span class="live-dot"></span> Live from the Bitcoin network right now</div>
       <div class="live-widget-grid">`;
 
     if (height !== undefined) {
-      html += `
-        <div class="live-stat">
-          <div class="live-stat-label">Current block height</div>
-          <div class="live-stat-value">${Number(height).toLocaleString()}</div>
-          <div class="live-stat-sub">${hash.slice(0, 16)}…</div>
-        </div>`;
+      html += `<div class="live-stat"><div class="live-stat-label">Current block height</div><div class="live-stat-value">${Number(height).toLocaleString()}</div><div class="live-stat-sub">${hash.slice(0, 16)}…</div></div>`;
     }
     if (mempoolStats) {
-      html += `
-        <div class="live-stat">
-          <div class="live-stat-label">Transactions waiting in the mempool</div>
-          <div class="live-stat-value">${Number(mempoolStats.count).toLocaleString()}</div>
-          <div class="live-stat-sub">${(mempoolStats.vsize / 1_000_000).toFixed(1)} MB of pending data</div>
-        </div>`;
+      html += `<div class="live-stat"><div class="live-stat-label">Transactions waiting in the mempool</div><div class="live-stat-value">${Number(mempoolStats.count).toLocaleString()}</div><div class="live-stat-sub">${(mempoolStats.vsize / 1_000_000).toFixed(1)} MB of pending data</div></div>`;
     }
     if (fees) {
-      html += `
-        <div class="live-stat">
-          <div class="live-stat-label">Fee for next-block confirmation</div>
-          <div class="live-stat-value">${fees.fastestFee} sat/vB</div>
-          <div class="live-stat-sub">Economy: ${fees.economyFee} sat/vB</div>
-        </div>`;
+      html += `<div class="live-stat"><div class="live-stat-label">Fee for next-block confirmation</div><div class="live-stat-value">${fees.fastestFee} sat/vB</div><div class="live-stat-sub">Economy: ${fees.economyFee} sat/vB</div></div>`;
     }
 
     html += `</div><div class="live-widget-note">This is real, live data — not a screenshot. Reload the page in a few minutes and these numbers will have changed.</div></div>`;
@@ -360,13 +312,9 @@ function renderCheckpoint() {
   const q = currentQuiz[quizIndex];
   slot.innerHTML = `
     <div class="checkpoint-card">
-      <div class="checkpoint-head">
-        <div class="checkpoint-label">Checkpoint · ${quizIndex + 1} of ${currentQuiz.length}</div>
-      </div>
+      <div class="checkpoint-head"><div class="checkpoint-label">Checkpoint · ${quizIndex + 1} of ${currentQuiz.length}</div></div>
       <div class="checkpoint-q">${q.question}</div>
-      <div class="quiz-options">
-        ${q.options.map((opt, i) => `<div class="quiz-opt" data-index="${i}">${opt}</div>`).join('')}
-      </div>
+      <div class="quiz-options">${q.options.map((opt, i) => `<div class="quiz-opt" data-index="${i}">${opt}</div>`).join('')}</div>
       <div id="decision-slot"></div>
     </div>`;
 
@@ -379,8 +327,7 @@ async function submitAnswer(quizId, selectedIndex) {
   document.querySelectorAll('.quiz-opt').forEach((o) => o.classList.add('disabled'));
 
   const res = await fetch(`/api/sections/${currentSectionId}/attempt`, {
-    method: 'POST',
-    headers: authHeaders(),
+    method: 'POST', headers: authHeaders(),
     body: JSON.stringify({ quizId, selectedIndex, responseTimeMs: null }),
   });
   const data = await res.json();
@@ -405,7 +352,51 @@ async function submitAnswer(quizId, selectedIndex) {
   }
 }
 
-// ---------- SATOSHI CHAT ----------
+// ---------- BOOK (full curriculum reader) ----------
+async function loadBook() {
+  const el = document.getElementById('book-content');
+  if (bookCache) { renderBook(bookCache); return; }
+
+  el.innerHTML = `<p class="body-text">Loading the full Bitcoin Diploma…</p>`;
+  const res = await fetch('/api/book', { headers: authHeaders() });
+  if (res.status === 401) return forceLogout();
+  const data = await res.json();
+  bookCache = data;
+  renderBook(data);
+}
+
+function renderBook(data) {
+  const el = document.getElementById('book-content');
+
+  const toc = data.chapters.map((ch) =>
+    `<a href="#book-ch-${ch.number}">Chapter ${ch.number} — ${ch.title}</a>`
+  ).join('');
+
+  const chaptersHtml = data.chapters.map((ch) => `
+    <div class="book-chapter" id="book-ch-${ch.number}">
+      <div class="book-chapter-head">
+        <div class="book-chapter-eyebrow">Chapter ${ch.number}</div>
+        <div class="book-chapter-title">${ch.title}</div>
+      </div>
+      ${ch.sections.map((s) => `
+        <div class="book-section">
+          <div class="book-section-title"><span class="num">${s.number}</span> ${s.title}</div>
+          ${s.activity_title ? `<div class="book-activity">✦ Activity: ${s.activity_title}</div>` : ''}
+          <div class="book-body">${s.content_md ? s.content_md.replace(/\n/g, '<br>') : '<i style="color:var(--text-faint)">Content for this section is still being written.</i>'}</div>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+
+  el.innerHTML = `
+    <div class="book-title">The Bitcoin Diploma</div>
+    <div class="book-sub">The full course, start to finish — read ahead, jump around, or come back to anything you've already covered.</div>
+    <div class="book-toc"><h3>Contents</h3>${toc}</div>
+    ${chaptersHtml}
+  `;
+}
+
+// ---------- SHALAKASI CHAT ----------
 async function loadChat() {
   if (!currentSectionId) return;
   const res = await fetch(`/api/sections/${currentSectionId}/chat`, { headers: authHeaders() });
@@ -430,8 +421,6 @@ function avatarHtml() {
   return `<div class="msg-avatar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0B0D10" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9 10.5c0-.6.5-1 1-1s1 .4 1 1M13 10.5c0-.6.5-1 1-1s1 .4 1 1"/><path d="M8.5 14.5c1 1 5 1 6 0"/></svg></div>`;
 }
 
-// Event delegation — handles speak buttons on messages loaded in a batch
-// (loadChat) and ones appended one at a time (sendChat) with one listener.
 document.getElementById('chat-scroll').addEventListener('click', (e) => {
   const btn = e.target.closest('.msg-speak-btn');
   if (!btn) return;

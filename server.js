@@ -13,33 +13,37 @@ const supabase = require('./services/supabase');
 const { decideNextStep, satoshiChatReply } = require('./services/aiEngine');
 
 const app = express();
-
-// helmet sets sane security headers by default (X-Frame-Options, etc).
-// contentSecurityPolicy is off because it needs careful tuning against
-// the Google Fonts + inline scripts already used in public/ — worth
-// revisiting once the UI is stable rather than fighting it mid-build.
 app.use(helmet({ contentSecurityPolicy: false }));
-
 // Restrict which origins can call this API. In dev (no CORS_ORIGIN set)
 // this stays open for convenience; set CORS_ORIGIN in production (e.g.
-// on Render) to your real domain to close this down.
+// https://shalakasi.onrender.com) to lock it down.
 app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
-
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 const JWT_SECRET = process.env.JWT_SECRET || 'shalakasi-dev-secret-change-me';
 const MASTERY_THRESHOLD = 0.75;
 
-// Brute-force protection: applies to both student and admin login.
-// 10 attempts per 15 minutes per IP is generous for a real student
-// mistyping a password, tight enough to make guessing impractical.
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 10,
+  max: 10,
+  message: { error: 'Too many login attempts — please wait a few minutes and try again.' },
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Too many attempts — please wait a few minutes and try again.' },
+});
+
+const adminLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  skipSuccessfulRequests: false,
+  message: { error: 'Too many requests — please wait a few minutes.' },
+});
+// Tighter limiter specifically for failed admin-key guesses.
+const adminKeyFailLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 15,
+  skipSuccessfulRequests: true,
+  message: { error: 'Too many failed admin key attempts — please wait a few minutes.' },
 });
 
 // ---------------------------------------------------------
@@ -87,8 +91,6 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
   res.json({ token, student: { id: student.id, username: student.username, full_name: student.full_name } });
 });
 
-// Stateless JWT — logout is really "client discards the token,"
-// this endpoint exists for a consistent API surface / future audit logging.
 app.post('/api/auth/logout', requireStudent, (req, res) => {
   res.json({ ok: true });
 });
@@ -97,7 +99,6 @@ app.post('/api/auth/logout', requireStudent, (req, res) => {
 // CURRICULUM + PROGRESS
 // ---------------------------------------------------------
 
-// Full chapter/section tree with this student's status on each section.
 app.get('/api/curriculum', requireStudent, async (req, res) => {
   const { data: chapters } = await supabase.from('chapters').select('*').order('sort_order');
   const { data: sections } = await supabase.from('sections').select('*').order('sort_order');
@@ -126,7 +127,31 @@ app.get('/api/curriculum', requireStudent, async (req, res) => {
   res.json({ chapters: tree });
 });
 
-// A single section's content + its checkpoint questions (answers withheld).
+// Full curriculum WITH lesson content — powers the in-app "Book" reader.
+// Read-only, no progress mutation, so it's safe to fetch once and reuse.
+app.get('/api/book', requireStudent, async (req, res) => {
+  const { data: chapters } = await supabase.from('chapters').select('*').order('sort_order');
+  const { data: sections } = await supabase
+    .from('sections')
+    .select('id, chapter_id, number, title, activity_title, content_md, sort_order')
+    .order('sort_order');
+
+  const tree = (chapters || []).map((ch) => ({
+    number: ch.number,
+    title: ch.title,
+    sections: (sections || [])
+      .filter((s) => s.chapter_id === ch.id)
+      .map((s) => ({
+        number: s.number,
+        title: s.title,
+        activity_title: s.activity_title,
+        content_md: s.content_md,
+      })),
+  }));
+
+  res.json({ chapters: tree });
+});
+
 app.get('/api/sections/:id', requireStudent, async (req, res) => {
   const { data: section, error } = await supabase
     .from('sections')
@@ -141,7 +166,6 @@ app.get('/api/sections/:id', requireStudent, async (req, res) => {
     .select('id, question, options, difficulty')
     .eq('section_id', section.id);
 
-  // Mark in_progress the first time a student opens this section.
   await supabase.from('student_progress').upsert(
     {
       student_id: req.student.id,
@@ -155,10 +179,6 @@ app.get('/api/sections/:id', requireStudent, async (req, res) => {
   res.json({ section, quiz: quiz || [] });
 });
 
-// For sections with no checkpoint quiz — mark it complete so the student
-// can actually advance, instead of "Continue anyway" looping back to the
-// same in_progress section forever (there's nothing to grade, so this
-// just records completion directly rather than going through /attempt).
 app.post('/api/sections/:id/complete', requireStudent, async (req, res) => {
   const { data: quiz } = await supabase.from('quiz_bank').select('id').eq('section_id', req.params.id);
   if (quiz && quiz.length) {
@@ -179,7 +199,6 @@ app.post('/api/sections/:id/complete', requireStudent, async (req, res) => {
   res.json({ ok: true });
 });
 
-// Submit one checkpoint answer, get graded + routed by the adaptive engine.
 app.post('/api/sections/:id/attempt', requireStudent, async (req, res) => {
   const { quizId, selectedIndex, responseTimeMs } = req.body;
   const sectionId = req.params.id;
@@ -197,7 +216,6 @@ app.post('/api/sections/:id/attempt', requireStudent, async (req, res) => {
     response_time_ms: responseTimeMs || null,
   });
 
-  // Score this section so far (all attempts on questions belonging to this section).
   const { data: sectionQuizIds } = await supabase.from('quiz_bank').select('id').eq('section_id', sectionId);
   const ids = (sectionQuizIds || []).map((q) => q.id);
   const { data: allAttempts } = await supabase
@@ -223,7 +241,6 @@ app.post('/api/sections/:id/attempt', requireStudent, async (req, res) => {
     { onConflict: 'student_id,section_id' }
   );
 
-  // Ask the adaptive engine what happens next (only once the section's quiz is complete).
   let decision = null;
   const { data: allSections } = await supabase.from('sections').select('*').order('sort_order');
   const orderedIndex = (allSections || []).findIndex((s) => s.id === sectionId);
@@ -242,7 +259,7 @@ app.post('/api/sections/:id/attempt', requireStudent, async (req, res) => {
 });
 
 // ---------------------------------------------------------
-// SATOSHI CHAT
+// SHALAKASI CHAT
 // ---------------------------------------------------------
 app.get('/api/sections/:id/chat', requireStudent, async (req, res) => {
   const { data } = await supabase
@@ -286,29 +303,17 @@ app.post('/api/sections/:id/chat', requireStudent, async (req, res) => {
 });
 
 // ---------------------------------------------------------
-// ADMIN — student provisioning (Luthando / Sassa)
+// ADMIN
 // ---------------------------------------------------------
-// Only failed attempts (wrong admin key) count toward this limit —
-// skipSuccessfulRequests means normal dashboard use (many successful
-// calls per session) never gets throttled, only repeated wrong-key
-// guesses do.
-const adminLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 15,
-  skipSuccessfulRequests: true,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Too many failed attempts — please wait a few minutes and try again.' },
-});
 app.use('/api/admin', adminLimiter);
 
-app.post('/api/admin/students', requireAdmin, async (req, res) => {
+app.post('/api/admin/students', requireAdmin, adminKeyFailLimiter, async (req, res) => {
   const { username, password, full_name, cohort } = req.body;
   if (!username || !password || !full_name) {
     return res.status(400).json({ error: 'username, password, full_name required' });
   }
   if (password.length < 8) {
-    return res.status(400).json({ error: 'Password must be at least 8 characters.' });
+    return res.status(400).json({ error: 'Password must be at least 8 characters' });
   }
   const password_hash = bcrypt.hashSync(password, 10);
   const { data, error } = await supabase
@@ -321,21 +326,13 @@ app.post('/api/admin/students', requireAdmin, async (req, res) => {
   res.json({ id: data.id, username: data.username, full_name: data.full_name });
 });
 
-// Reset a student's password without touching Supabase directly —
-// also invalidates any session they're currently logged into on a
-// workstation, since JWTs are tied to nothing revocable, so a fresh
-// password is the practical way to force a re-login.
-app.patch('/api/admin/students/:id/password', requireAdmin, async (req, res) => {
+app.patch('/api/admin/students/:id/password', requireAdmin, adminKeyFailLimiter, async (req, res) => {
   const { password } = req.body;
   if (!password || password.length < 8) {
-    return res.status(400).json({ error: 'Password must be at least 8 characters.' });
+    return res.status(400).json({ error: 'Password must be at least 8 characters' });
   }
   const password_hash = bcrypt.hashSync(password, 10);
-  const { error } = await supabase
-    .from('students')
-    .update({ password_hash })
-    .eq('id', req.params.id);
-
+  const { error } = await supabase.from('students').update({ password_hash }).eq('id', req.params.id);
   if (error) return res.status(400).json({ error: error.message });
   res.json({ ok: true });
 });
@@ -358,7 +355,6 @@ app.get('/api/admin/students/:id/decisions', requireAdmin, async (req, res) => {
   res.json(data || []);
 });
 
-// Full chapter/section tree — no student context, admin browsing only.
 app.get('/api/admin/curriculum', requireAdmin, async (req, res) => {
   const { data: chapters } = await supabase.from('chapters').select('*').order('sort_order');
   const { data: sections } = await supabase.from('sections').select('*').order('sort_order');
@@ -369,7 +365,6 @@ app.get('/api/admin/curriculum', requireAdmin, async (req, res) => {
   res.json({ chapters: tree });
 });
 
-// Per-section mastery for one student, for the admin mastery grid.
 app.get('/api/admin/students/:id/progress', requireAdmin, async (req, res) => {
   const { data } = await supabase
     .from('student_progress')
@@ -378,7 +373,6 @@ app.get('/api/admin/students/:id/progress', requireAdmin, async (req, res) => {
   res.json(data || []);
 });
 
-// Full chat history for a student across every section, newest first.
 app.get('/api/admin/students/:id/chat', requireAdmin, async (req, res) => {
   const { data } = await supabase
     .from('chat_log')
