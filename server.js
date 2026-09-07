@@ -14,9 +14,6 @@ const { decideNextStep, satoshiChatReply } = require('./services/aiEngine');
 
 const app = express();
 app.use(helmet({ contentSecurityPolicy: false }));
-// Restrict which origins can call this API. In dev (no CORS_ORIGIN set)
-// this stays open for convenience; set CORS_ORIGIN in production (e.g.
-// https://shalakasi.onrender.com) to lock it down.
 app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -35,10 +32,8 @@ const loginLimiter = rateLimit({
 const adminLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 200,
-  skipSuccessfulRequests: false,
   message: { error: 'Too many requests — please wait a few minutes.' },
 });
-// Tighter limiter specifically for failed admin-key guesses.
 const adminKeyFailLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 15,
@@ -69,6 +64,18 @@ function requireAdmin(req, res, next) {
   next();
 }
 
+// Local (SAST-ish) calendar date string, not UTC — a login at 23:50 SAST
+// shouldn't get logged against the wrong day just because UTC has already
+// rolled over. Uses the server's local timezone; set TZ=Africa/Johannesburg
+// in the environment if the host machine's default timezone differs.
+function todayLocalDate() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 // ---------------------------------------------------------
 // AUTH
 // ---------------------------------------------------------
@@ -88,6 +95,31 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
   }
 
   const token = jwt.sign({ id: student.id, username: student.username }, JWT_SECRET, { expiresIn: '8h' });
+
+  // Record attendance — one row per student per calendar day. First login
+  // of the day creates it; any later logins that same day just bump the
+  // count and last_login_at, so a student who logs out/in a few times
+  // still only counts as "present" once for the register.
+  const logDate = todayLocalDate();
+  const { data: existing } = await supabase
+    .from('attendance_log')
+    .select('id, login_count')
+    .eq('student_id', student.id)
+    .eq('log_date', logDate)
+    .maybeSingle();
+
+  if (existing) {
+    await supabase
+      .from('attendance_log')
+      .update({ last_login_at: new Date().toISOString(), login_count: existing.login_count + 1 })
+      .eq('id', existing.id);
+  } else {
+    await supabase.from('attendance_log').insert({
+      student_id: student.id,
+      log_date: logDate,
+    });
+  }
+
   res.json({ token, student: { id: student.id, username: student.username, full_name: student.full_name } });
 });
 
@@ -127,8 +159,6 @@ app.get('/api/curriculum', requireStudent, async (req, res) => {
   res.json({ chapters: tree });
 });
 
-// Full curriculum WITH lesson content — powers the in-app "Book" reader.
-// Read-only, no progress mutation, so it's safe to fetch once and reuse.
 app.get('/api/book', requireStudent, async (req, res) => {
   const { data: chapters } = await supabase.from('chapters').select('*').order('sort_order');
   const { data: sections } = await supabase
@@ -381,6 +411,145 @@ app.get('/api/admin/students/:id/chat', requireAdmin, async (req, res) => {
     .order('created_at', { ascending: false })
     .limit(100);
   res.json(data || []);
+});
+
+// The attendance register — defaults to today, or pass ?date=YYYY-MM-DD
+// for any other day. Returns every student who logged in that day.
+app.get('/api/admin/attendance', requireAdmin, async (req, res) => {
+  const date = req.query.date || todayLocalDate();
+
+  const { data: records, error } = await supabase
+    .from('attendance_log')
+    .select('student_id, first_login_at, last_login_at, login_count, students(full_name, username, cohort)')
+    .eq('log_date', date)
+    .order('first_login_at', { ascending: true });
+
+  if (error) return res.status(400).json({ error: error.message });
+
+  res.json({ date, present: records || [] });
+});
+
+// A simple date-range summary — how many days each student has attended,
+// useful for spotting who's falling behind on showing up at all.
+app.get('/api/admin/attendance/summary', requireAdmin, async (req, res) => {
+  const { data: records, error } = await supabase
+    .from('attendance_log')
+    .select('student_id, log_date, students(full_name, username)');
+
+  if (error) return res.status(400).json({ error: error.message });
+
+  const byStudent = {};
+  (records || []).forEach((r) => {
+    const key = r.student_id;
+    if (!byStudent[key]) {
+      byStudent[key] = { student_id: key, full_name: r.students?.full_name, username: r.students?.username, days_present: 0, dates: [] };
+    }
+    byStudent[key].days_present += 1;
+    byStudent[key].dates.push(r.log_date);
+  });
+
+  res.json(Object.values(byStudent).sort((a, b) => b.days_present - a.days_present));
+});
+
+// Program-level impact dashboard — cohort-wide numbers for reporting
+// upward (steering committee, funders), not per-student classroom detail.
+app.get('/api/admin/impact', requireAdmin, async (req, res) => {
+  const [
+    { data: students },
+    { data: chapters },
+    { data: sections },
+    { data: progress },
+    { data: attempts },
+    { count: chatMessageCount },
+  ] = await Promise.all([
+    supabase.from('students').select('id, active').eq('active', true),
+    supabase.from('chapters').select('id, number, title').order('sort_order'),
+    supabase.from('sections').select('id, chapter_id, number, title').order('sort_order'),
+    supabase.from('student_progress').select('student_id, section_id, status'),
+    supabase.from('attempts').select('quiz_id, is_correct'),
+    supabase.from('chat_log').select('id', { count: 'exact', head: true }),
+  ]);
+
+  const totalStudents = (students || []).length;
+  const totalSections = (sections || []).length;
+
+  // Overall completion: average, across all active students, of
+  // (sections mastered / total sections in the curriculum).
+  const masteredByStudent = {};
+  (progress || []).forEach((p) => {
+    if (p.status === 'mastered') {
+      masteredByStudent[p.student_id] = (masteredByStudent[p.student_id] || 0) + 1;
+    }
+  });
+  const completionPercents = (students || []).map((s) => {
+    const mastered = masteredByStudent[s.id] || 0;
+    return totalSections ? (mastered / totalSections) * 100 : 0;
+  });
+  const avgCompletionPercent = completionPercents.length
+    ? Math.round(completionPercents.reduce((a, b) => a + b, 0) / completionPercents.length)
+    : 0;
+
+  // Per-chapter funnel: average % of that chapter's sections mastered,
+  // across all active students — shows where the cohort collectively
+  // slows down or drops off.
+  const sectionsByChapter = {};
+  (sections || []).forEach((s) => {
+    if (!sectionsByChapter[s.chapter_id]) sectionsByChapter[s.chapter_id] = [];
+    sectionsByChapter[s.chapter_id].push(s.id);
+  });
+
+  const masteredSectionSet = new Set(
+    (progress || []).filter((p) => p.status === 'mastered').map((p) => `${p.student_id}:${p.section_id}`)
+  );
+
+  const chapterFunnel = (chapters || []).map((ch) => {
+    const sectionIds = sectionsByChapter[ch.id] || [];
+    if (!sectionIds.length || !totalStudents) return { number: ch.number, title: ch.title, avg_percent: 0 };
+    let totalMastered = 0;
+    (students || []).forEach((s) => {
+      sectionIds.forEach((secId) => {
+        if (masteredSectionSet.has(`${s.id}:${secId}`)) totalMastered += 1;
+      });
+    });
+    const possible = sectionIds.length * totalStudents;
+    return { number: ch.number, title: ch.title, avg_percent: Math.round((totalMastered / possible) * 100) };
+  });
+
+  // Toughest sections: lowest first-look correct rate, only counting
+  // questions with a meaningful number of attempts (avoids one lucky/
+  // unlucky guess looking like a real pattern).
+  const attemptStatsByQuiz = {};
+  (attempts || []).forEach((a) => {
+    if (!attemptStatsByQuiz[a.quiz_id]) attemptStatsByQuiz[a.quiz_id] = { total: 0, correct: 0 };
+    attemptStatsByQuiz[a.quiz_id].total += 1;
+    if (a.is_correct) attemptStatsByQuiz[a.quiz_id].correct += 1;
+  });
+
+  const { data: quizItems } = await supabase.from('quiz_bank').select('id, question, section_id, sections(number, title)');
+  const toughestSections = (quizItems || [])
+    .map((q) => {
+      const stats = attemptStatsByQuiz[q.id];
+      if (!stats || stats.total < 3) return null;
+      return {
+        section_number: q.sections?.number,
+        section_title: q.sections?.title,
+        question: q.question,
+        correct_rate: Math.round((stats.correct / stats.total) * 100),
+        attempts: stats.total,
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.correct_rate - b.correct_rate)
+    .slice(0, 5);
+
+  res.json({
+    total_students: totalStudents,
+    avg_completion_percent: avgCompletionPercent,
+    total_checkpoint_attempts: (attempts || []).length,
+    total_chat_messages: chatMessageCount || 0,
+    chapter_funnel: chapterFunnel,
+    toughest_sections: toughestSections,
+  });
 });
 
 const PORT = process.env.PORT || 3300;

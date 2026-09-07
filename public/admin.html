@@ -10,7 +10,6 @@
 </head>
 <body>
 
-<!-- ADMIN KEY GATE -->
 <div class="gate-screen" id="gate-screen">
   <div class="gate-card">
     <div class="gate-logo">SK</div>
@@ -25,44 +24,115 @@
   </div>
 </div>
 
-<!-- ADMIN APP -->
 <div class="admin-app" id="admin-app">
   <div class="admin-topbar">
     <div class="brand">
       <div class="brand-logo">SK</div>
       ShalaKasi <span class="sub">&nbsp;Admin</span>
     </div>
+    <div class="admin-tabs">
+      <button class="admin-tab active" data-page="students">Students</button>
+      <button class="admin-tab" data-page="register">Register</button>
+      <button class="admin-tab" data-page="impact">Impact</button>
+    </div>
     <button class="gate-logout" id="gate-logout">Log out</button>
   </div>
 
-  <div class="admin-body">
-    <h1 class="page-title">Students</h1>
-    <p class="page-sub">Provision new workstation logins and review mastery, chat, and adaptive routing per student.</p>
+  <!-- STUDENTS PAGE -->
+  <div class="admin-page active" id="page-students">
+    <div class="admin-body">
+      <h1 class="page-title">Students</h1>
+      <p class="page-sub">Provision new workstation logins and review mastery, chat, and adaptive routing per student.</p>
 
-    <div class="add-student-card">
-      <h3>Add a student</h3>
-      <div class="add-grid">
-        <div class="field"><label>Full name</label><input type="text" id="new-fullname" placeholder="Zanele M."></div>
-        <div class="field"><label>Username</label><input type="text" id="new-username" placeholder="zanele01"></div>
-        <div class="field"><label>Password</label><input type="text" id="new-password" placeholder="temp password"></div>
-        <div class="field"><label>Cohort</label><input type="text" id="new-cohort" placeholder="2026-Q3"></div>
+      <div class="add-student-card">
+        <h3>Add a student</h3>
+        <div class="add-grid">
+          <div class="field"><label>Full name</label><input type="text" id="new-fullname" placeholder="Zanele M."></div>
+          <div class="field"><label>Username</label><input type="text" id="new-username" placeholder="zanele01"></div>
+          <div class="field"><label>Password</label><input type="text" id="new-password" placeholder="temp password (8+ chars)"></div>
+          <div class="field"><label>Cohort</label><input type="text" id="new-cohort" placeholder="2026-Q3"></div>
+        </div>
+        <button class="add-btn" id="add-student-btn" style="margin-top:14px;">Create login</button>
+        <div class="add-status" id="add-status"></div>
       </div>
-      <button class="add-btn" id="add-student-btn" style="margin-top:14px;">Create login</button>
-      <div class="add-status" id="add-status"></div>
-    </div>
 
-    <table class="student-table">
-      <thead>
-        <tr><th>Name</th><th>Username</th><th>Cohort</th><th>Status</th><th>Created</th></tr>
-      </thead>
-      <tbody id="student-rows">
-        <tr><td colspan="5" class="empty-note">Loading students…</td></tr>
-      </tbody>
-    </table>
+      <table class="student-table">
+        <thead>
+          <tr><th>Name</th><th>Username</th><th>Cohort</th><th>Status</th><th>Created</th></tr>
+        </thead>
+        <tbody id="student-rows">
+          <tr><td colspan="5" class="empty-note">Loading students…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- REGISTER PAGE -->
+  <div class="admin-page" id="page-register">
+    <div class="admin-body">
+      <h1 class="page-title">Attendance register</h1>
+      <p class="page-sub">Every student login is logged automatically — this is who showed up, and when.</p>
+
+      <div class="register-controls">
+        <div class="field" style="max-width:220px;">
+          <label>Date</label>
+          <input type="date" id="register-date">
+        </div>
+        <button class="add-btn" id="register-today-btn">Today</button>
+      </div>
+
+      <table class="student-table" style="margin-top:20px;">
+        <thead>
+          <tr><th>Name</th><th>Username</th><th>First login</th><th>Last login</th><th>Logins</th></tr>
+        </thead>
+        <tbody id="register-rows">
+          <tr><td colspan="5" class="empty-note">Loading…</td></tr>
+        </tbody>
+      </table>
+
+      <h3 class="summary-heading">Attendance summary — all time</h3>
+      <table class="student-table">
+        <thead>
+          <tr><th>Name</th><th>Username</th><th>Days present</th></tr>
+        </thead>
+        <tbody id="summary-rows">
+          <tr><td colspan="3" class="empty-note">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- IMPACT PAGE -->
+  <div class="admin-page" id="page-impact">
+    <div class="admin-body">
+      <h1 class="page-title">Program impact</h1>
+      <p class="page-sub">Cohort-wide numbers — for reporting up, not day-to-day teaching.</p>
+
+      <div class="stat-cards" id="impact-cards">
+        <div class="stat-card"><div class="stat-value">—</div><div class="stat-label">Active students</div></div>
+        <div class="stat-card"><div class="stat-value">—</div><div class="stat-label">Avg. curriculum completion</div></div>
+        <div class="stat-card"><div class="stat-value">—</div><div class="stat-label">Checkpoint attempts logged</div></div>
+        <div class="stat-card"><div class="stat-value">—</div><div class="stat-label">Messages exchanged with ShalaKasi</div></div>
+      </div>
+
+      <h3 class="summary-heading">Chapter completion funnel</h3>
+      <p class="page-sub" style="margin-bottom:16px;">Average % of each chapter's sections mastered, across all active students — shows where the cohort collectively slows down.</p>
+      <div id="funnel-chart"></div>
+
+      <h3 class="summary-heading">Where students struggle most</h3>
+      <p class="page-sub" style="margin-bottom:16px;">Checkpoint questions with the lowest correct rate (minimum 3 attempts) — worth reviewing the lesson content or the question itself.</p>
+      <table class="student-table">
+        <thead>
+          <tr><th>Section</th><th>Question</th><th>Correct rate</th><th>Attempts</th></tr>
+        </thead>
+        <tbody id="toughest-rows">
+          <tr><td colspan="4" class="empty-note">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 
-<!-- DETAIL PANEL -->
 <div class="overlay" id="overlay"></div>
 <div class="detail-panel" id="detail-panel">
   <div class="detail-head">
@@ -70,8 +140,8 @@
       <h2 id="detail-name">Student</h2>
       <div class="meta" id="detail-meta"></div>
     </div>
-    <div style="display:flex; gap:8px;">
-      <button class="close-btn" id="reset-password-btn" title="Reset password" style="width:auto; padding:0 12px; font-size:11px;">Reset password</button>
+    <div style="display:flex; gap:8px; align-items:flex-start;">
+      <button class="close-btn" id="detail-reset-password" title="Reset password" style="width:auto; padding:0 10px; font-size:11px;">Reset password</button>
       <button class="close-btn" id="detail-close">✕</button>
     </div>
   </div>

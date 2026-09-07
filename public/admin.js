@@ -1,6 +1,6 @@
 // public/admin.js
 let adminKey = sessionStorage.getItem('shalakasi_admin_key');
-let curriculumCache = null; // { chapters: [...] } — fetched once, reused per student
+let curriculumCache = null;
 let currentDetailStudentId = null;
 
 function adminHeaders() {
@@ -41,6 +41,18 @@ function enterAdmin() {
   document.getElementById('admin-app').classList.add('active');
   loadStudents();
 }
+
+// ---------- PAGE TABS (Students / Register) ----------
+document.querySelectorAll('.admin-tab').forEach((tab) => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.admin-tab').forEach((t) => t.classList.remove('active'));
+    document.querySelectorAll('.admin-page').forEach((p) => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('page-' + tab.dataset.page).classList.add('active');
+    if (tab.dataset.page === 'register') loadRegister();
+    if (tab.dataset.page === 'impact') loadImpact();
+  });
+});
 
 // ---------- ADD STUDENT ----------
 document.getElementById('add-student-btn').addEventListener('click', async () => {
@@ -110,11 +122,96 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
+// ---------- REGISTER ----------
+const dateInput = document.getElementById('register-date');
+dateInput.valueAsDate = new Date();
+dateInput.addEventListener('change', () => loadRegister());
+document.getElementById('register-today-btn').addEventListener('click', () => {
+  dateInput.valueAsDate = new Date();
+  loadRegister();
+});
+
+async function loadRegister() {
+  const date = dateInput.value;
+  const tbody = document.getElementById('register-rows');
+  tbody.innerHTML = `<tr><td colspan="5" class="empty-note">Loading…</td></tr>`;
+
+  const res = await fetch(`/api/admin/attendance?date=${date}`, { headers: adminHeaders() });
+  const data = await res.json();
+
+  if (!data.present || !data.present.length) {
+    tbody.innerHTML = `<tr><td colspan="5" class="empty-note">Nobody logged in on ${date}.</td></tr>`;
+  } else {
+    tbody.innerHTML = data.present.map((r) => `
+      <tr>
+        <td>${escapeHtml(r.students?.full_name || '—')}</td>
+        <td><span class="pill">${escapeHtml(r.students?.username || '—')}</span></td>
+        <td>${new Date(r.first_login_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+        <td>${new Date(r.last_login_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+        <td>${r.login_count}</td>
+      </tr>`).join('');
+  }
+
+  const summaryRes = await fetch('/api/admin/attendance/summary', { headers: adminHeaders() });
+  const summary = await summaryRes.json();
+  const summaryBody = document.getElementById('summary-rows');
+  summaryBody.innerHTML = summary.length
+    ? summary.map((s) => `
+        <tr>
+          <td>${escapeHtml(s.full_name || '—')}</td>
+          <td><span class="pill">${escapeHtml(s.username || '—')}</span></td>
+          <td>${s.days_present}</td>
+        </tr>`).join('')
+    : `<tr><td colspan="3" class="empty-note">No attendance recorded yet.</td></tr>`;
+}
+
+// ---------- IMPACT ----------
+async function loadImpact() {
+  const res = await fetch('/api/admin/impact', { headers: adminHeaders() });
+  const data = await res.json();
+
+  const cards = document.querySelectorAll('#impact-cards .stat-card .stat-value');
+  cards[0].textContent = data.total_students;
+  cards[1].textContent = data.avg_completion_percent + '%';
+  cards[2].textContent = data.total_checkpoint_attempts.toLocaleString();
+  cards[3].textContent = data.total_chat_messages.toLocaleString();
+
+  const funnelEl = document.getElementById('funnel-chart');
+  funnelEl.innerHTML = data.chapter_funnel.map((ch) => `
+    <div class="funnel-row">
+      <div class="funnel-label">Ch ${ch.number} · ${escapeHtml(ch.title)}</div>
+      <div class="funnel-bar-track">
+        <div class="funnel-bar-fill" style="width:${ch.avg_percent}%"></div>
+      </div>
+      <div class="funnel-percent">${ch.avg_percent}%</div>
+    </div>`).join('');
+
+  const toughestBody = document.getElementById('toughest-rows');
+  toughestBody.innerHTML = data.toughest_sections.length
+    ? data.toughest_sections.map((t) => `
+        <tr>
+          <td><span class="pill">${escapeHtml(t.section_number)}</span> ${escapeHtml(t.section_title)}</td>
+          <td>${escapeHtml(t.question)}</td>
+          <td><span class="pill ${t.correct_rate < 50 ? '' : 'active'}">${t.correct_rate}%</span></td>
+          <td>${t.attempts}</td>
+        </tr>`).join('')
+    : `<tr><td colspan="4" class="empty-note">Not enough checkpoint attempts yet to identify patterns.</td></tr>`;
+}
+
 // ---------- DETAIL PANEL ----------
 document.getElementById('detail-close').addEventListener('click', closeDetail);
 document.getElementById('overlay').addEventListener('click', closeDetail);
-document.getElementById('reset-password-btn').addEventListener('click', async () => {
-  const newPassword = prompt('New password (minimum 8 characters):');
+document.querySelectorAll('.detail-tab').forEach((tab) => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.detail-tab').forEach((t) => t.classList.remove('active'));
+    document.querySelectorAll('.detail-section').forEach((s) => s.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('section-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+document.getElementById('detail-reset-password').addEventListener('click', async () => {
+  const newPassword = prompt('New password for this student (min 8 characters):');
   if (!newPassword) return;
   if (newPassword.length < 8) { alert('Password must be at least 8 characters.'); return; }
 
@@ -124,15 +221,7 @@ document.getElementById('reset-password-btn').addEventListener('click', async ()
   });
   const data = await res.json();
   if (!res.ok) { alert(data.error || 'Could not reset password.'); return; }
-  alert('Password reset. The student will need to use the new password on their next login.');
-});
-document.querySelectorAll('.detail-tab').forEach((tab) => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.detail-tab').forEach((t) => t.classList.remove('active'));
-    document.querySelectorAll('.detail-section').forEach((s) => s.classList.remove('active'));
-    tab.classList.add('active');
-    document.getElementById('section-' + tab.dataset.tab).classList.add('active');
-  });
+  alert('Password updated.');
 });
 
 function closeDetail() {
