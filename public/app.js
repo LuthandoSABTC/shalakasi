@@ -230,10 +230,12 @@ async function loadSection(sectionId, chapterNumber, chapterTitle) {
     ${speechSupported ? '<button class="listen-btn" id="listen-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M19 12a7 7 0 0 0-4-6.3M16 12a4 4 0 0 0-2-3.5"/></svg> Listen</button>' : ''}
     <div class="body-text">${(data.section.content_md || 'Content for this section is being written by Sassa — check back soon, or ask ShalaKasi to walk you through it in the meantime.').replace(/\n/g, '<br>')}</div>
     <div id="live-widget-slot"></div>
+    <div id="pp-widget-slot"></div>
     <div id="checkpoint-slot"></div>
   `;
 
   loadLiveBitcoinWidget(data.section.number);
+  loadPurchasingPowerWidget(data.section.number);
 
   const listenBtn = document.getElementById('listen-btn');
   if (listenBtn) {
@@ -291,6 +293,60 @@ async function loadLiveBitcoinWidget(sectionNumber) {
     slot.innerHTML = html;
   } catch (err) {
     slot.innerHTML = `<div class="live-widget"><div class="live-widget-loading">Couldn't reach mempool.space right now — this needs an internet connection. The lesson content above still explains the concept either way.</div></div>`;
+  }
+}
+
+// ---------- PURCHASING POWER COMPARISON (Chapter 5) ----------
+// Real historical BTC/ZAR price from CoinGecko's free API, compared
+// against R100 in cash eroded by an average South African inflation
+// rate. The elapsed time is computed from whatever data CoinGecko
+// actually returns (its free tier's history window can vary) rather
+// than assuming a fixed "10 years," so the label is always accurate
+// to the real data behind it.
+const PP_WIDGET_SECTIONS = new Set(['5.1', '5.1.1']);
+const SA_AVG_ANNUAL_INFLATION = 0.055; // ~5.5%/yr — Stats SA long-run average, used as a labeled estimate, not live data
+
+async function loadPurchasingPowerWidget(sectionNumber) {
+  const slot = document.getElementById('pp-widget-slot');
+  if (!PP_WIDGET_SECTIONS.has(sectionNumber) || !slot) return;
+
+  slot.innerHTML = `<div class="pp-widget"><div class="live-widget-loading">Fetching real historical Bitcoin price data…</div></div>`;
+
+  try {
+    const res = await fetch('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=zar&days=3650');
+    const data = await res.json();
+    const prices = data.prices;
+    if (!prices || !prices.length) throw new Error('no price data');
+
+    const [earliestTs, earliestPrice] = prices[0];
+    const [latestTs, latestPrice] = prices[prices.length - 1];
+    const yearsElapsed = (latestTs - earliestTs) / (365.25 * 24 * 60 * 60 * 1000);
+    const yearsLabel = yearsElapsed >= 1.5 ? `${Math.round(yearsElapsed)} years` : `${Math.round(yearsElapsed * 12)} months`;
+
+    const btcUnitsBoughtThen = 100 / earliestPrice;
+    const btcValueNow = btcUnitsBoughtThen * latestPrice;
+
+    const cashValueTodayRealTerms = 100 / Math.pow(1 + SA_AVG_ANNUAL_INFLATION, yearsElapsed);
+
+    const maxBar = Math.max(btcValueNow, 100); // cash side never exceeds R100 nominal, so bitcoin's bar is always the scale reference
+    const cashBarPercent = Math.max((100 / maxBar) * 100, 4);
+    const btcBarPercent = Math.max((btcValueNow / maxBar) * 100, 4);
+
+    slot.innerHTML = `
+      <div class="pp-widget">
+        <div class="pp-head">R100, held ${yearsLabel} ago — where is it now?</div>
+        <div class="pp-row">
+          <div class="pp-label">Kept as cash</div>
+          <div class="pp-bar-track"><div class="pp-bar-fill cash" style="width:${cashBarPercent}%">R${cashValueTodayRealTerms.toFixed(0)} of real buying power</div></div>
+        </div>
+        <div class="pp-row">
+          <div class="pp-label">Converted to Bitcoin</div>
+          <div class="pp-bar-track"><div class="pp-bar-fill btc" style="width:${btcBarPercent}%">R${btcValueNow.toLocaleString('en-ZA', { maximumFractionDigits: 0 })} today</div></div>
+        </div>
+        <div class="pp-note">The Bitcoin side uses real historical BTC/ZAR prices from CoinGecko — genuine data, not an illustration. The cash side is an estimate using South Africa's ~5.5% long-run average annual inflation, since no free live inflation-index API exists to pull that part in real time. This isn't investment advice — it's one real illustration of the inflation effect covered in the lesson above, over one specific historical period; past performance doesn't predict the future.</div>
+      </div>`;
+  } catch (err) {
+    slot.innerHTML = `<div class="pp-widget"><div class="live-widget-loading">Couldn't fetch historical price data right now — this needs an internet connection. The lesson content above still explains the concept either way.</div></div>`;
   }
 }
 
