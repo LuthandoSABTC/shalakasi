@@ -371,6 +371,7 @@ function renderCheckpoint() {
       <div class="checkpoint-head"><div class="checkpoint-label">Checkpoint · ${quizIndex + 1} of ${currentQuiz.length}</div></div>
       <div class="checkpoint-q">${q.question}</div>
       <div class="quiz-options">${q.options.map((opt, i) => `<div class="quiz-opt" data-index="${i}">${opt}</div>`).join('')}</div>
+      <div id="mining-slot"></div>
       <div id="decision-slot"></div>
     </div>`;
 
@@ -382,11 +383,34 @@ function renderCheckpoint() {
 async function submitAnswer(quizId, selectedIndex) {
   document.querySelectorAll('.quiz-opt').forEach((o) => o.classList.add('disabled'));
 
-  const res = await fetch(`/api/sections/${currentSectionId}/attempt`, {
-    method: 'POST', headers: authHeaders(),
-    body: JSON.stringify({ quizId, selectedIndex, responseTimeMs: null }),
-  });
+  const miningSlot = document.getElementById('mining-slot');
+  miningSlot.innerHTML = `
+    <div class="mining-anim">
+      <div class="mining-hash" id="mining-hash">0000000000000000</div>
+      <div class="mining-label"><span class="mining-dot"></span> Checking your answer…</div>
+    </div>`;
+  const hashEl = document.getElementById('mining-hash');
+  const hashChars = '0123456789abcdef';
+  const hashInterval = setInterval(() => {
+    if (!hashEl) return;
+    let s = '';
+    for (let i = 0; i < 16; i++) s += hashChars[Math.floor(Math.random() * hashChars.length)];
+    hashEl.textContent = s;
+  }, 60);
+
+  const minDelay = new Promise((resolve) => setTimeout(resolve, 750));
+
+  const [res] = await Promise.all([
+    fetch(`/api/sections/${currentSectionId}/attempt`, {
+      method: 'POST', headers: authHeaders(),
+      body: JSON.stringify({ quizId, selectedIndex, responseTimeMs: null }),
+    }),
+    minDelay,
+  ]);
   const data = await res.json();
+
+  clearInterval(hashInterval);
+  miningSlot.innerHTML = '';
 
   document.querySelectorAll('.quiz-opt').forEach((o) => {
     const idx = parseInt(o.dataset.index, 10);
