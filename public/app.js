@@ -540,8 +540,20 @@ async function loadDashboard() {
   el.innerHTML = `
     <h1 class="dash-title">${student.full_name}'s progress</h1>
     <p class="dash-sub">${masteredSections} of ${totalSections} sections mastered · ShalaKasi is building this path as you go, not following a fixed order.</p>
+    <div class="path-wrap" id="path-wrap">
+      <svg class="path-svg" id="path-svg"></svg>
+      ${data.chapters.map((ch, i) => {
+        const chStatus = chapterStatus(ch);
+        const side = i % 2 === 0 ? 'left' : 'right';
+        return `
+        <div class="path-node ${side}" data-chapter="${ch.number}">
+          <div class="path-coin ${chStatus}">₿</div>
+          <div class="path-node-label"><span class="path-node-num">Ch ${ch.number}</span>${escapeHtmlDash(ch.title)}</div>
+        </div>`;
+      }).join('')}
+    </div>
     ${data.chapters.map((ch) => `
-      <div class="chapter-card">
+      <div class="chapter-card" id="chapter-card-${ch.number}">
         <div class="chapter-card-head">
           <h3>Ch ${ch.number} · ${ch.title}</h3>
           <span>${ch.sections.filter((s) => s.status === 'mastered').length}/${ch.sections.length}</span>
@@ -551,7 +563,71 @@ async function loadDashboard() {
         </div>
       </div>`).join('')}
   `;
+
+  drawPathConnectors();
+  attachPathNodeHandlers(data.chapters);
 }
+
+function chapterStatus(chapter) {
+  const statuses = chapter.sections.map((s) => s.status);
+  if (statuses.every((s) => s === 'mastered')) return 'mastered';
+  if (statuses.some((s) => s !== 'locked')) return 'in_progress';
+  return 'locked';
+}
+
+function escapeHtmlDash(str) {
+  const div = document.createElement('div');
+  div.textContent = str ?? '';
+  return div.innerHTML;
+}
+
+// Draws a real dashed curve through each chapter node's actual on-screen
+// position, rather than faking a zigzag with CSS alone — so it stays
+// correct regardless of label length, screen width, or font size.
+function drawPathConnectors() {
+  const wrap = document.getElementById('path-wrap');
+  const svg = document.getElementById('path-svg');
+  const nodes = Array.from(wrap.querySelectorAll('.path-node'));
+  if (!wrap || !svg || nodes.length < 2) return;
+
+  const wrapRect = wrap.getBoundingClientRect();
+  svg.setAttribute('width', wrapRect.width);
+  svg.setAttribute('height', wrapRect.height);
+  svg.setAttribute('viewBox', `0 0 ${wrapRect.width} ${wrapRect.height}`);
+
+  const points = nodes.map((node) => {
+    const coin = node.querySelector('.path-coin');
+    const r = coin.getBoundingClientRect();
+    return { x: r.left - wrapRect.left + r.width / 2, y: r.top - wrapRect.top + r.height / 2 };
+  });
+
+  let d = `M ${points[0].x} ${points[0].y}`;
+  for (let i = 1; i < points.length; i++) {
+    const prev = points[i - 1];
+    const curr = points[i];
+    const midY = (prev.y + curr.y) / 2;
+    // Smooth S-curve between alternating sides instead of a sharp zigzag corner.
+    d += ` C ${prev.x} ${midY}, ${curr.x} ${midY}, ${curr.x} ${curr.y}`;
+  }
+
+  svg.innerHTML = `<path d="${d}" fill="none" stroke="#3A3F48" stroke-width="3" stroke-dasharray="2 10" stroke-linecap="round"/>`;
+}
+
+function attachPathNodeHandlers(chapters) {
+  document.querySelectorAll('.path-node').forEach((node) => {
+    node.addEventListener('click', () => {
+      const chNumber = parseInt(node.dataset.chapter, 10);
+      const chapter = chapters.find((c) => c.number === chNumber);
+      if (!chapter) return;
+      const card = document.getElementById(`chapter-card-${chNumber}`);
+      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  });
+}
+
+window.addEventListener('resize', () => {
+  if (document.getElementById('view-dashboard').classList.contains('active')) drawPathConnectors();
+});
 
 // ---------- BOOT ----------
 function forceLogout() {
