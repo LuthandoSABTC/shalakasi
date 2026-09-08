@@ -6,6 +6,10 @@ let currentSectionId = null;
 let currentQuiz = [];
 let quizIndex = 0;
 let bookCache = null;
+let reviewQuestions = [];
+let reviewIndex = 0;
+let reviewCorrectCount = 0;
+let reviewChapter = null;
 
 function authHeaders() {
   return { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
@@ -188,6 +192,19 @@ async function loadNextSection() {
   if (res.status === 401) return forceLogout();
   const data = await res.json();
 
+  // Chapter review gate: the first chapter (in order) that's fully
+  // mastered but hasn't had its cumulative review attempted yet blocks
+  // moving on to later chapters — this is what makes "answer everything
+  // from every section" actually happen at the end of each chapter,
+  // not just leave it optional.
+  for (const ch of data.chapters) {
+    const allMastered = ch.sections.length > 0 && ch.sections.every((s) => s.status === 'mastered');
+    if (allMastered && !ch.review_completed) {
+      loadChapterReview(ch);
+      return;
+    }
+  }
+
   let target = null;
   outer: for (const ch of data.chapters) {
     for (const s of ch.sections) {
@@ -246,6 +263,136 @@ async function loadSection(sectionId, chapterNumber, chapterTitle) {
   }
 
   renderCheckpoint();
+}
+
+// ---------- CHAPTER REVIEW ----------
+// A cumulative test aggregating every checkpoint question from every
+// section in a chapter, shown once all of that chapter's sections are
+// mastered. Mandatory to go through, but the score doesn't block
+// progress — it's shown honestly to the student either way.
+async function loadChapterReview(chapter) {
+  currentSectionId = null; // no single section is "current" during a review
+  stopSpeech();
+
+  const res = await fetch(`/api/chapters/${chapter.id}/review`, { headers: authHeaders() });
+  if (res.status === 401) return forceLogout();
+  const data = await res.json();
+
+  reviewQuestions = data.questions || [];
+  reviewIndex = 0;
+  reviewCorrectCount = 0;
+  reviewChapter = { id: chapter.id, number: chapter.number, title: chapter.title };
+
+  const el = document.getElementById('course-content');
+  el.innerHTML = `
+    <div class="crumb">Chapter ${chapter.number} · ${escapeHtmlDash(chapter.title)} <span>· Chapter Review</span></div>
+    <h1 class="section-title">Let's check what stuck</h1>
+    <div class="satoshi-intro">
+      <div class="satoshi-avatar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B0D10" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M9.5 10.8c0-.5.4-.9.9-.9s.9.4.9.9M12.7 10.8c0-.5.4-.9.9-.9s.9.4.9.9"/><path d="M9.5 14c.9.9 4.1.9 5 0"/></svg></div>
+      <p><b>ShalaKasi:</b> Before moving into the next chapter, let's go back through everything from Chapter ${chapter.number} — ${reviewQuestions.length} questions, pulled from every section you just worked through.</p>
+    </div>
+    <div id="review-slot"></div>
+  `;
+
+  if (!reviewQuestions.length) {
+    document.getElementById('review-slot').innerHTML = `<p class="no-quiz-note">No review questions available for this chapter yet. <button class="continue-btn" id="review-skip">Continue</button></p>`;
+    document.getElementById('review-skip').addEventListener('click', async () => {
+      await fetch(`/api/chapters/${chapter.id}/review/complete`, {
+        method: 'POST', headers: authHeaders(), body: JSON.stringify({ score_percent: 100 }),
+      });
+      loadNextSection();
+    });
+    return;
+  }
+
+  renderReviewQuestion();
+}
+
+function renderReviewQuestion() {
+  const slot = document.getElementById('review-slot');
+  const q = reviewQuestions[reviewIndex];
+
+  slot.innerHTML = `
+    <div class="checkpoint-card">
+      <div class="checkpoint-head">
+        <div class="checkpoint-label">Review · ${reviewIndex + 1} of ${reviewQuestions.length}</div>
+        <span class="pill-tag">from ${escapeHtmlDash(q.section_number)}</span>
+      </div>
+      <div class="checkpoint-q">${q.question}</div>
+      <div class="quiz-options">${q.options.map((opt, i) => `<div class="quiz-opt" data-index="${i}">${opt}</div>`).join('')}</div>
+      <div id="review-mining-slot"></div>
+      <div id="review-decision-slot"></div>
+    </div>`;
+
+  document.querySelectorAll('#review-slot .quiz-opt').forEach((opt) => {
+    opt.addEventListener('click', () => submitReviewAnswer(q.id, parseInt(opt.dataset.index, 10)));
+  });
+}
+
+async function submitReviewAnswer(quizId, selectedIndex) {
+  document.querySelectorAll('#review-slot .quiz-opt').forEach((o) => o.classList.add('disabled'));
+
+  const miningSlot = document.getElementById('review-mining-slot');
+  miningSlot.innerHTML = `
+    <div class="mining-anim">
+      <div class="mining-hash" id="review-mining-hash">0000000000000000</div>
+      <div class="mining-label"><span class="mining-dot"></span> Checking your answer…</div>
+    </div>`;
+  const hashEl = document.getElementById('review-mining-hash');
+  const hashChars = '0123456789abcdef';
+  const hashInterval = setInterval(() => {
+    if (!hashEl) return;
+    let s = '';
+    for (let i = 0; i < 16; i++) s += hashChars[Math.floor(Math.random() * hashChars.length)];
+    hashEl.textContent = s;
+  }, 60);
+
+  const minDelay = new Promise((resolve) => setTimeout(resolve, 600));
+  const [res] = await Promise.all([
+    fetch(`/api/chapters/${reviewChapter.id}/review/answer`, {
+      method: 'POST', headers: authHeaders(), body: JSON.stringify({ quizId, selectedIndex }),
+    }),
+    minDelay,
+  ]);
+  const data = await res.json();
+  clearInterval(hashInterval);
+  miningSlot.innerHTML = '';
+
+  if (data.isCorrect) reviewCorrectCount += 1;
+
+  document.querySelectorAll('#review-slot .quiz-opt').forEach((o) => {
+    const idx = parseInt(o.dataset.index, 10);
+    if (idx === data.correctIndex) o.classList.add('correct');
+    else if (idx === selectedIndex) o.classList.add('incorrect');
+  });
+
+  reviewIndex += 1;
+  const decisionSlot = document.getElementById('review-decision-slot');
+
+  if (reviewIndex < reviewQuestions.length) {
+    decisionSlot.innerHTML = `<button class="continue-btn" id="review-next">Next question</button>`;
+    document.getElementById('review-next').addEventListener('click', renderReviewQuestion);
+  } else {
+    const scorePercent = Math.round((reviewCorrectCount / reviewQuestions.length) * 100);
+    const completeRes = await fetch(`/api/chapters/${reviewChapter.id}/review/complete`, {
+      method: 'POST', headers: authHeaders(), body: JSON.stringify({ score_percent: scorePercent }),
+    });
+    const completeData = await completeRes.json();
+
+    const el = document.getElementById('course-content');
+    el.innerHTML = `
+      <div class="crumb">Chapter ${reviewChapter.number} · ${escapeHtmlDash(reviewChapter.title)} <span>· Chapter Review Complete</span></div>
+      <h1 class="section-title">${scorePercent}% on this chapter's review</h1>
+      <div class="satoshi-intro">
+        <div class="satoshi-avatar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B0D10" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M9.5 10.8c0-.5.4-.9.9-.9s.9.4.9.9M12.7 10.8c0-.5.4-.9.9-.9s.9.4.9.9"/><path d="M9.5 14c.9.9 4.1.9 5 0"/></svg></div>
+        <p><b>ShalaKasi:</b> ${completeData.passed
+          ? `Solid — that's a strong hold on Chapter ${reviewChapter.number}. On to the next one.`
+          : `That's a good first pass — some of Chapter ${reviewChapter.number} might be worth a second look later. Nothing's blocking you from moving on though.`}</p>
+      </div>
+      <button class="continue-btn" id="review-continue">Continue to the next chapter</button>
+    `;
+    document.getElementById('review-continue').addEventListener('click', loadNextSection);
+  }
 }
 
 // ---------- LIVE BITCOIN NETWORK WIDGET (Chapter 9) ----------

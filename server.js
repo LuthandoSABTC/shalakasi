@@ -138,11 +138,18 @@ app.get('/api/curriculum', requireStudent, async (req, res) => {
     .from('student_progress')
     .select('*')
     .eq('student_id', req.student.id);
+  const { data: reviews } = await supabase
+    .from('chapter_reviews')
+    .select('chapter_id, passed, score_percent')
+    .eq('student_id', req.student.id);
 
   const progressBySection = Object.fromEntries((progress || []).map((p) => [p.section_id, p]));
+  const reviewByChapter = Object.fromEntries((reviews || []).map((r) => [r.chapter_id, r]));
 
   const tree = (chapters || []).map((ch) => ({
     ...ch,
+    review_completed: !!reviewByChapter[ch.id],
+    review_score_percent: reviewByChapter[ch.id]?.score_percent ?? null,
     sections: (sections || [])
       .filter((s) => s.chapter_id === ch.id)
       .map((s) => ({
@@ -227,6 +234,76 @@ app.post('/api/sections/:id/complete', requireStudent, async (req, res) => {
   );
 
   res.json({ ok: true });
+});
+
+// ---------------------------------------------------------
+// CHAPTER REVIEW — a cumulative test pulling together every
+// checkpoint question from every section in a chapter, shown once
+// a student has mastered all of that chapter's sections. This is
+// mandatory to attempt (it's what gates moving to the next chapter
+// on the client), but the score itself doesn't block progress —
+// it's a reflection/reinforcement tool, not a hard wall.
+// ---------------------------------------------------------
+
+app.get('/api/chapters/:id/review', requireStudent, async (req, res) => {
+  const { data: chapter, error: chErr } = await supabase
+    .from('chapters')
+    .select('id, number, title')
+    .eq('id', req.params.id)
+    .single();
+  if (chErr || !chapter) return res.status(404).json({ error: 'Chapter not found' });
+
+  const { data: sections } = await supabase.from('sections').select('id, number').eq('chapter_id', chapter.id);
+  const sectionIds = (sections || []).map((s) => s.id);
+
+  const { data: questions } = await supabase
+    .from('quiz_bank')
+    .select('id, question, options, section_id, sections(number)')
+    .in('section_id', sectionIds);
+
+  const shaped = (questions || []).map((q) => ({
+    id: q.id,
+    question: q.question,
+    options: q.options,
+    section_number: q.sections?.number,
+  }));
+
+  res.json({ chapter: { id: chapter.id, number: chapter.number, title: chapter.title }, questions: shaped });
+});
+
+// Grades one question at a time, stateless — no DB write here. This
+// mirrors the per-section checkpoint's immediate feedback without
+// polluting the main attempts/mastery tables with review-time answers.
+app.post('/api/chapters/:id/review/answer', requireStudent, async (req, res) => {
+  const { quizId, selectedIndex } = req.body;
+  const { data: quizItem } = await supabase.from('quiz_bank').select('correct_index').eq('id', quizId).single();
+  if (!quizItem) return res.status(404).json({ error: 'Question not found' });
+  res.json({ isCorrect: quizItem.correct_index === selectedIndex, correctIndex: quizItem.correct_index });
+});
+
+// Records the final tally once the student has gone through every
+// question. score_percent is computed client-side across the review
+// session — trusted the same way quizIndex sequencing already is
+// elsewhere in this app; the stakes here are pedagogical, not financial.
+app.post('/api/chapters/:id/review/complete', requireStudent, async (req, res) => {
+  const { score_percent } = req.body;
+  if (typeof score_percent !== 'number' || score_percent < 0 || score_percent > 100) {
+    return res.status(400).json({ error: 'Invalid score_percent' });
+  }
+  const passed = score_percent >= 70;
+
+  await supabase.from('chapter_reviews').upsert(
+    {
+      student_id: req.student.id,
+      chapter_id: req.params.id,
+      score_percent,
+      passed,
+      completed_at: new Date().toISOString(),
+    },
+    { onConflict: 'student_id,chapter_id' }
+  );
+
+  res.json({ passed, score_percent });
 });
 
 app.post('/api/sections/:id/attempt', requireStudent, async (req, res) => {
