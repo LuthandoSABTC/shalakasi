@@ -10,7 +10,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const supabase = require('./services/supabase');
-const { decideNextStep, satoshiChatReply } = require('./services/aiEngine');
+const { decideNextStep } = require('./services/aiEngine');
 
 const app = express();
 app.use(helmet({ contentSecurityPolicy: false }));
@@ -363,50 +363,6 @@ app.post('/api/sections/:id/attempt', requireStudent, async (req, res) => {
   }
 
   res.json({ isCorrect, correctIndex: quizItem.correct_index, scorePercent, decision });
-});
-
-// ---------------------------------------------------------
-// SHALAKASI CHAT
-// ---------------------------------------------------------
-app.get('/api/sections/:id/chat', requireStudent, async (req, res) => {
-  const { data } = await supabase
-    .from('chat_log')
-    .select('role, message, created_at')
-    .eq('student_id', req.student.id)
-    .eq('section_id', req.params.id)
-    .order('created_at', { ascending: true });
-  res.json({ messages: data || [] });
-});
-
-app.post('/api/sections/:id/chat', requireStudent, async (req, res) => {
-  const { message } = req.body;
-  const sectionId = req.params.id;
-  if (!message || !message.trim()) return res.status(400).json({ error: 'Message required' });
-
-  const { data: section } = await supabase.from('sections').select('title').eq('id', sectionId).single();
-
-  await supabase.from('chat_log').insert({
-    student_id: req.student.id,
-    section_id: sectionId,
-    role: 'student',
-    message,
-  });
-
-  const reply = await satoshiChatReply({
-    studentId: req.student.id,
-    sectionId,
-    sectionTitle: section?.title || 'this section',
-    studentMessage: message,
-  });
-
-  await supabase.from('chat_log').insert({
-    student_id: req.student.id,
-    section_id: sectionId,
-    role: 'satoshi',
-    message: reply,
-  });
-
-  res.json({ reply });
 });
 
 // ---------------------------------------------------------

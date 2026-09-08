@@ -41,11 +41,4 @@ function ruleBasedDecision({ scorePercent, currentSection, nextSection }) {
   };
 }
 
-// Chat stays available as a UI element (per request) but is no longer
-// AI-powered — always returns the same honest, static message rather
-// than calling any external service.
-async function satoshiChatReply() {
-  return "Chat isn't AI-powered right now — try the Book tab for the full lesson text, or ask your teacher if you're stuck on something specific.";
-}
-
-module.exports = { decideNextStep, satoshiChatReply };
+module.exports = { decideNextStep };

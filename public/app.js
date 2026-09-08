@@ -120,15 +120,12 @@ function showView(name) {
   document.querySelectorAll('.rail-btn').forEach((b) => b.classList.remove('active'));
   document.querySelector(`.rail-btn[data-view="${name}"]`).classList.add('active');
 
-  const titles = { course: 'Course', book: '<b>The Book</b>', satoshi: 'Ask <b>ShalaKasi</b>', dashboard: '<b>Your Progress</b>' };
+  const titles = { course: 'Course', book: '<b>The Book</b>', dashboard: '<b>Your Progress</b>' };
   document.getElementById('topbar-title').innerHTML = titles[name];
 
-  if (name === 'satoshi') loadChat();
   if (name === 'dashboard') loadDashboard();
   if (name === 'book') loadBook();
 }
-
-document.getElementById('ask-satoshi-fab').addEventListener('click', () => showView('satoshi'));
 
 // ---------- COURSE ----------
 async function loadNextSection() {
@@ -555,49 +552,6 @@ function renderBook(data) {
     <div class="book-toc"><h3>Contents</h3>${toc}</div>
     ${chaptersHtml}
   `;
-}
-
-// ---------- SHALAKASI CHAT ----------
-async function loadChat() {
-  if (!currentSectionId) return;
-  const res = await fetch(`/api/sections/${currentSectionId}/chat`, { headers: authHeaders() });
-  const data = await res.json();
-  const scroll = document.getElementById('chat-scroll');
-  scroll.innerHTML = data.messages.map(renderMsg).join('') ||
-    `<div class="msg from-satoshi">${avatarHtml()}<div><div class="msg-name">ShalaKasi</div><div class="msg-bubble">Chat isn't AI-powered right now — try the Book tab for the full lesson text, or ask your teacher if you're stuck.</div></div></div>`;
-  scroll.scrollTop = scroll.scrollHeight;
-}
-
-function renderMsg(m) {
-  const isSat = m.role === 'satoshi';
-  return `<div class="msg ${isSat ? 'from-satoshi' : 'from-student'}">
-    ${isSat ? avatarHtml() : `<div class="msg-avatar">${(student.full_name || '?')[0]}</div>`}
-    <div><div class="msg-name">${isSat ? 'ShalaKasi' : 'You'}</div><div class="msg-bubble">${m.message}</div></div>
-  </div>`;
-}
-function avatarHtml() {
-  return `<div class="msg-avatar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0B0D10" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9 10.5c0-.6.5-1 1-1s1 .4 1 1M13 10.5c0-.6.5-1 1-1s1 .4 1 1"/><path d="M8.5 14.5c1 1 5 1 6 0"/></svg></div>`;
-}
-
-document.getElementById('chat-send').addEventListener('click', sendChat);
-document.getElementById('chat-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') sendChat(); });
-
-async function sendChat() {
-  const input = document.getElementById('chat-input');
-  const message = input.value.trim();
-  if (!message || !currentSectionId) return;
-  input.value = '';
-
-  const scroll = document.getElementById('chat-scroll');
-  scroll.insertAdjacentHTML('beforeend', renderMsg({ role: 'student', message }));
-  scroll.scrollTop = scroll.scrollHeight;
-
-  const res = await fetch(`/api/sections/${currentSectionId}/chat`, {
-    method: 'POST', headers: authHeaders(), body: JSON.stringify({ message }),
-  });
-  const data = await res.json();
-  scroll.insertAdjacentHTML('beforeend', renderMsg({ role: 'satoshi', message: data.reply }));
-  scroll.scrollTop = scroll.scrollHeight;
 }
 
 // ---------- DASHBOARD ----------
