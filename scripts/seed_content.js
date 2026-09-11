@@ -1,8 +1,6 @@
 // scripts/seed_content.js
 // Writes a content_seed JSON file's lesson text into sections.content_md.
-// Run this AFTER seed_curriculum.js.
-// Usage: npm run seed:content                        (uses data/content_seed.json)
-//        node scripts/seed_content.js content_seed_ch3_4.json   (uses a different file in data/)
+// Usage: node scripts/seed_content.js content_seed_ch1_2_expanded.json
 
 require('dotenv').config();
 const fs = require('fs');
@@ -22,8 +20,8 @@ async function seed() {
       .select();
 
     if (error) console.error(`Section ${number} failed:`, error.message);
-    else if (!data.length) console.warn(`Section ${number} not found — run seed:curriculum first.`);
-    else console.log(`Content written for section ${number}`);
+    else if (!data.length) console.warn(`Section ${number} not found.`);
+    else console.log(`Content updated for section ${number}`);
   }
   console.log('\nDone.');
 }

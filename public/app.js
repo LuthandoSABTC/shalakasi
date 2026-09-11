@@ -140,7 +140,7 @@ async function loadNextSection() {
   // not just leave it optional.
   for (const ch of data.chapters) {
     const allMastered = ch.sections.length > 0 && ch.sections.every((s) => s.status === 'mastered');
-    if (allMastered && !ch.review_completed) {
+    if (allMastered && !ch.review_passed) {
       loadChapterReview(ch);
       return;
     }
@@ -311,18 +311,39 @@ async function submitReviewAnswer(quizId, selectedIndex) {
     const completeData = await completeRes.json();
 
     const el = document.getElementById('course-content');
-    el.innerHTML = `
-      <div class="crumb">Chapter ${reviewChapter.number} · ${escapeHtmlDash(reviewChapter.title)} <span>· Chapter Review Complete</span></div>
-      <h1 class="section-title">${scorePercent}% on this chapter's review</h1>
-      <div class="satoshi-intro">
-        <div class="satoshi-avatar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B0D10" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M9.5 10.8c0-.5.4-.9.9-.9s.9.4.9.9M12.7 10.8c0-.5.4-.9.9-.9s.9.4.9.9"/><path d="M9.5 14c.9.9 4.1.9 5 0"/></svg></div>
-        <p><b>ShalaKasi:</b> ${completeData.passed
-          ? `Solid — that's a strong hold on Chapter ${reviewChapter.number}. On to the next one.`
-          : `That's a good first pass — some of Chapter ${reviewChapter.number} might be worth a second look later. Nothing's blocking you from moving on though.`}</p>
-      </div>
-      <button class="continue-btn" id="review-continue">Continue to the next chapter</button>
-    `;
-    document.getElementById('review-continue').addEventListener('click', loadNextSection);
+
+    if (completeData.passed) {
+      let rewardLine = 'Chapter complete!';
+      if (completeData.reward?.status === 'paid') {
+        rewardLine = `🎉 ${completeData.reward.amount_sats} sats sent to your wallet for finishing this chapter!`;
+      } else if (completeData.reward?.status === 'no_match') {
+        rewardLine = `Chapter complete! Your sats reward is on hold — your wallet isn't linked yet. Check with Sassa to get that sorted.`;
+      } else if (completeData.reward?.status === 'failed') {
+        rewardLine = `Chapter complete! The sats reward hit a snag on our end — Sassa can sort that out manually.`;
+      }
+
+      el.innerHTML = `
+        <div class="crumb">Chapter ${reviewChapter.number} · ${escapeHtmlDash(reviewChapter.title)} <span>· Chapter Review Complete</span></div>
+        <h1 class="section-title">${scorePercent}% — you passed!</h1>
+        <div class="satoshi-intro">
+          <div class="satoshi-avatar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B0D10" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M9.5 10.8c0-.5.4-.9.9-.9s.9.4.9.9M12.7 10.8c0-.5.4-.9.9-.9s.9.4.9.9"/><path d="M9.5 14c.9.9 4.1.9 5 0"/></svg></div>
+          <p><b>ShalaKasi:</b> ${rewardLine}</p>
+        </div>
+        <button class="continue-btn" id="review-continue">Continue to the next chapter</button>
+      `;
+      document.getElementById('review-continue').addEventListener('click', loadNextSection);
+    } else {
+      el.innerHTML = `
+        <div class="crumb">Chapter ${reviewChapter.number} · ${escapeHtmlDash(reviewChapter.title)} <span>· Chapter Review</span></div>
+        <h1 class="section-title">${scorePercent}% — not quite there yet</h1>
+        <div class="satoshi-intro">
+          <div class="satoshi-avatar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B0D10" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M9.5 10.8c0-.5.4-.9.9-.9s.9.4.9.9M12.7 10.8c0-.5.4-.9.9-.9s.9.4.9.9"/><path d="M9.5 14c.9.9 4.1.9 5 0"/></svg></div>
+          <p><b>ShalaKasi:</b> You need 70% to pass and move on to the next chapter. Worth going back through the sections you're less sure of before trying again.</p>
+        </div>
+        <button class="continue-btn" id="review-retry">Try the review again</button>
+      `;
+      document.getElementById('review-retry').addEventListener('click', () => loadChapterReview(reviewChapter));
+    }
   }
 }
 
@@ -573,8 +594,12 @@ async function loadDashboard() {
         const side = i % 2 === 0 ? 'left' : 'right';
         return `
         <div class="path-node ${side}" data-chapter="${ch.number}">
-          <div class="path-coin ${chStatus}">₿</div>
-          <div class="path-node-label"><span class="path-node-num">Ch ${ch.number}</span>${escapeHtmlDash(ch.title)}</div>
+          <div class="path-bubble ${chStatus}">
+            <div class="path-bubble-bar"></div>
+            <div class="path-coin ${chStatus}">₿</div>
+            <div class="path-node-label"><span class="path-node-num">Chapter ${ch.number}</span>${escapeHtmlDash(ch.title)}</div>
+            <div class="path-bubble-tail"></div>
+          </div>
         </div>`;
       }).join('')}
     </div>
