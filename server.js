@@ -11,7 +11,6 @@ const jwt = require('jsonwebtoken');
 
 const supabase = require('./services/supabase');
 const { decideNextStep } = require('./services/aiEngine');
-const { payChapterReward } = require('./services/blinkPayment');
 
 const app = express();
 app.use(helmet({ contentSecurityPolicy: false }));
@@ -26,7 +25,13 @@ app.use('/api', (req, res, next) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   next();
 });
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), {
+  etag: false,
+  lastModified: false,
+  setHeaders: (res) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  },
+}));
 
 const JWT_SECRET = process.env.JWT_SECRET || 'shalakasi-dev-secret-change-me';
 const MASTERY_THRESHOLD = 0.75;
@@ -314,50 +319,11 @@ app.post('/api/chapters/:id/review/complete', requireStudent, async (req, res) =
     { onConflict: 'student_id,chapter_id' }
   );
 
-  let reward = null;
-
-  if (passed) {
-    // Idempotency check FIRST — the unique constraint on (student_id,
-    // chapter_id) is the real guarantee, but checking before attempting
-    // a payment avoids firing a redundant real Lightning payment on a
-    // retry/duplicate request in the first place.
-    const { data: existingReward } = await supabase
-      .from('chapter_rewards')
-      .select('status, amount_sats')
-      .eq('student_id', req.student.id)
-      .eq('chapter_id', req.params.id)
-      .maybeSingle();
-
-    if (existingReward) {
-      reward = existingReward;
-    } else {
-      const [{ data: student }, { data: chapter }] = await Promise.all([
-        supabase.from('students').select('full_name').eq('id', req.student.id).single(),
-        supabase.from('chapters').select('number').eq('id', req.params.id).single(),
-      ]);
-
-      const REWARD_SATS = 500;
-      const result = await payChapterReward({
-        studentFullName: student?.full_name,
-        chapterNumber: chapter?.number,
-        amountSats: REWARD_SATS,
-      });
-
-      const { data: inserted } = await supabase
-        .from('chapter_rewards')
-        .insert({
-          student_id: req.student.id,
-          chapter_id: req.params.id,
-          amount_sats: REWARD_SATS,
-          status: result.status,
-          detail: result.detail,
-        })
-        .select('status, amount_sats')
-        .single();
-
-      reward = inserted;
-    }
-  }
+  // Sats reward payment intentionally disabled for now — re-enable by
+  // restoring services/blinkPayment.js and the payment block here once
+  // BITCOINEKASI_SUPABASE_URL / BITCOINEKASI_SUPABASE_SERVICE_ROLE_KEY /
+  // BLINK_API_KEY are actually configured.
+  const reward = null;
 
   res.json({ passed, score_percent, reward });
 });
