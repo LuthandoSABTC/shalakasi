@@ -11,11 +11,21 @@ const jwt = require('jsonwebtoken');
 
 const supabase = require('./services/supabase');
 const { decideNextStep } = require('./services/aiEngine');
+const { payChapterReward } = require('./services/blinkPayment');
 
 const app = express();
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
 app.use(express.json());
+
+// API responses must never be cached — a stale cached /api/curriculum
+// response (e.g. showing an old review_passed:false) is exactly the
+// kind of bug that would make a student look like they're stuck
+// re-doing a chapter review they already passed.
+app.use('/api', (req, res, next) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  next();
+});
 app.use(express.static(path.join(__dirname, 'public')));
 
 const JWT_SECRET = process.env.JWT_SECRET || 'shalakasi-dev-secret-change-me';
@@ -149,6 +159,7 @@ app.get('/api/curriculum', requireStudent, async (req, res) => {
   const tree = (chapters || []).map((ch) => ({
     ...ch,
     review_completed: !!reviewByChapter[ch.id],
+    review_passed: !!reviewByChapter[ch.id]?.passed,
     review_score_percent: reviewByChapter[ch.id]?.score_percent ?? null,
     sections: (sections || [])
       .filter((s) => s.chapter_id === ch.id)
@@ -303,7 +314,52 @@ app.post('/api/chapters/:id/review/complete', requireStudent, async (req, res) =
     { onConflict: 'student_id,chapter_id' }
   );
 
-  res.json({ passed, score_percent });
+  let reward = null;
+
+  if (passed) {
+    // Idempotency check FIRST — the unique constraint on (student_id,
+    // chapter_id) is the real guarantee, but checking before attempting
+    // a payment avoids firing a redundant real Lightning payment on a
+    // retry/duplicate request in the first place.
+    const { data: existingReward } = await supabase
+      .from('chapter_rewards')
+      .select('status, amount_sats')
+      .eq('student_id', req.student.id)
+      .eq('chapter_id', req.params.id)
+      .maybeSingle();
+
+    if (existingReward) {
+      reward = existingReward;
+    } else {
+      const [{ data: student }, { data: chapter }] = await Promise.all([
+        supabase.from('students').select('full_name').eq('id', req.student.id).single(),
+        supabase.from('chapters').select('number').eq('id', req.params.id).single(),
+      ]);
+
+      const REWARD_SATS = 500;
+      const result = await payChapterReward({
+        studentFullName: student?.full_name,
+        chapterNumber: chapter?.number,
+        amountSats: REWARD_SATS,
+      });
+
+      const { data: inserted } = await supabase
+        .from('chapter_rewards')
+        .insert({
+          student_id: req.student.id,
+          chapter_id: req.params.id,
+          amount_sats: REWARD_SATS,
+          status: result.status,
+          detail: result.detail,
+        })
+        .select('status, amount_sats')
+        .single();
+
+      reward = inserted;
+    }
+  }
+
+  res.json({ passed, score_percent, reward });
 });
 
 app.post('/api/sections/:id/attempt', requireStudent, async (req, res) => {

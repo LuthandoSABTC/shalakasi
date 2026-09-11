@@ -129,7 +129,7 @@ function showView(name) {
 
 // ---------- COURSE ----------
 async function loadNextSection() {
-  const res = await fetch('/api/curriculum', { headers: authHeaders() });
+  const res = await fetch('/api/curriculum', { headers: authHeaders(), cache: 'no-store' });
   if (res.status === 401) return forceLogout();
   const data = await res.json();
 
@@ -595,7 +595,7 @@ function renderBook(data) {
 
 // ---------- DASHBOARD ----------
 async function loadDashboard() {
-  const res = await fetch('/api/curriculum', { headers: authHeaders() });
+  const res = await fetch('/api/curriculum', { headers: authHeaders(), cache: 'no-store' });
   const data = await res.json();
   const el = document.getElementById('dashboard-content');
 
