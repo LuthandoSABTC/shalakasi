@@ -278,14 +278,30 @@ async function submitReviewAnswer(quizId, selectedIndex) {
     hashEl.textContent = s;
   }, 60);
 
-  const minDelay = new Promise((resolve) => setTimeout(resolve, 600));
-  const [res] = await Promise.all([
-    fetch(`/api/chapters/${reviewChapter.id}/review/answer`, {
-      method: 'POST', headers: authHeaders(), body: JSON.stringify({ quizId, selectedIndex }),
-    }),
-    minDelay,
-  ]);
-  const data = await res.json();
+  let data;
+  try {
+    const minDelay = new Promise((resolve) => setTimeout(resolve, 600));
+    const [res] = await Promise.all([
+      fetch(`/api/chapters/${reviewChapter.id}/review/answer`, {
+        method: 'POST', headers: authHeaders(), body: JSON.stringify({ quizId, selectedIndex }),
+      }),
+      minDelay,
+    ]);
+    if (!res.ok) throw new Error(`Server returned ${res.status}`);
+    data = await res.json();
+  } catch (err) {
+    clearInterval(hashInterval);
+    miningSlot.innerHTML = `
+      <div class="mining-anim">
+        <div class="mining-label" style="color:var(--dusk);">Couldn't reach the server — check your connection.</div>
+      </div>
+      <button class="continue-btn" id="review-retry-answer">Try again</button>`;
+    document.getElementById('review-retry-answer').addEventListener('click', () => {
+      document.querySelectorAll('#review-slot .quiz-opt').forEach((o) => o.classList.remove('disabled'));
+      miningSlot.innerHTML = '';
+    });
+    return;
+  }
   clearInterval(hashInterval);
   miningSlot.innerHTML = '';
 
@@ -497,16 +513,31 @@ async function submitAnswer(quizId, selectedIndex) {
     hashEl.textContent = s;
   }, 60);
 
-  const minDelay = new Promise((resolve) => setTimeout(resolve, 750));
-
-  const [res] = await Promise.all([
-    fetch(`/api/sections/${currentSectionId}/attempt`, {
-      method: 'POST', headers: authHeaders(),
-      body: JSON.stringify({ quizId, selectedIndex, responseTimeMs: null }),
-    }),
-    minDelay,
-  ]);
-  const data = await res.json();
+  let data;
+  try {
+    const minDelay = new Promise((resolve) => setTimeout(resolve, 750));
+    const [res] = await Promise.all([
+      fetch(`/api/sections/${currentSectionId}/attempt`, {
+        method: 'POST', headers: authHeaders(),
+        body: JSON.stringify({ quizId, selectedIndex, responseTimeMs: null }),
+      }),
+      minDelay,
+    ]);
+    if (!res.ok) throw new Error(`Server returned ${res.status}`);
+    data = await res.json();
+  } catch (err) {
+    clearInterval(hashInterval);
+    miningSlot.innerHTML = `
+      <div class="mining-anim">
+        <div class="mining-label" style="color:var(--dusk);">Couldn't reach the server — check your connection.</div>
+      </div>
+      <button class="continue-btn" id="retry-answer">Try again</button>`;
+    document.getElementById('retry-answer').addEventListener('click', () => {
+      document.querySelectorAll('.quiz-opt').forEach((o) => o.classList.remove('disabled'));
+      miningSlot.innerHTML = '';
+    });
+    return;
+  }
 
   clearInterval(hashInterval);
   miningSlot.innerHTML = '';
