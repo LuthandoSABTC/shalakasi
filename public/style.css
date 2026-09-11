@@ -64,8 +64,7 @@ body{background:var(--bg); color:var(--text); font-family:'Inter', sans-serif; -
 .crumb{font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.08em; margin-bottom:14px;}
 .crumb span{color:var(--orange);}
 h1.section-title{font-family:'Space Grotesk', sans-serif; font-size:32px; font-weight:700; line-height:1.15; margin-bottom:22px;}
-.satoshi-intro{display:flex; gap:14px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px; margin-bottom:16px;}
-.satoshi-avatar{width:40px; height:40px; border-radius:10px; background:linear-gradient(135deg, var(--orange), #C9720F); flex-shrink:0; display:flex; align-items:center; justify-content:center;}
+.review-note{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px 20px; margin-bottom:16px; font-size:14px; line-height:1.6; color:var(--text-dim);}
 .satoshi-intro p{font-size:14px; line-height:1.6; color:var(--text-dim); padding-top:2px;}
 .body-text{font-size:16px; line-height:1.8; color:#D5D2CB; margin-bottom:18px; white-space:pre-line;}
 .activity-badge{display:inline-flex; align-items:center; gap:6px; font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--amber); background:rgba(251,191,36,0.12); padding:6px 12px; border-radius:20px; margin-bottom:20px;}

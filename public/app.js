@@ -181,11 +181,7 @@ async function loadSection(sectionId, chapterNumber, chapterTitle) {
     <div class="crumb">Chapter ${ch} · ${chTitle} <span>· Section ${data.section.number}</span></div>
     <h1 class="section-title">${data.section.title}</h1>
     ${data.section.activity_title ? `<div class="activity-badge">✦ Activity: ${data.section.activity_title}</div>` : ''}
-    <div class="satoshi-intro">
-      <div class="satoshi-avatar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B0D10" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M9.5 10.8c0-.5.4-.9.9-.9s.9.4.9.9M12.7 10.8c0-.5.4-.9.9-.9s.9.4.9.9"/><path d="M9.5 14c.9.9 4.1.9 5 0"/></svg></div>
-      <p><b>ShalaKasi:</b> Take your time on this one — you can always ask me if something doesn't click.</p>
-    </div>
-    <div class="body-text">${(data.section.content_md || 'Content for this section is being written by Sassa — check back soon, or ask ShalaKasi to walk you through it in the meantime.').replace(/\n/g, '<br>')}</div>
+    <div class="body-text">${(data.section.content_md || 'Content for this section is being written by Sassa — check back soon.').replace(/\n/g, '<br>')}</div>
     <div id="live-widget-slot"></div>
     <div id="pp-widget-slot"></div>
     <div id="checkpoint-slot"></div>
@@ -218,10 +214,7 @@ async function loadChapterReview(chapter) {
   el.innerHTML = `
     <div class="crumb">Chapter ${chapter.number} · ${escapeHtmlDash(chapter.title)} <span>· Chapter Review</span></div>
     <h1 class="section-title">Let's check what stuck</h1>
-    <div class="satoshi-intro">
-      <div class="satoshi-avatar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B0D10" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M9.5 10.8c0-.5.4-.9.9-.9s.9.4.9.9M12.7 10.8c0-.5.4-.9.9-.9s.9.4.9.9"/><path d="M9.5 14c.9.9 4.1.9 5 0"/></svg></div>
-      <p><b>ShalaKasi:</b> Before moving into the next chapter, let's go back through everything from Chapter ${chapter.number} — ${reviewQuestions.length} questions, pulled from every section you just worked through.</p>
-    </div>
+    <div class="review-note">Before moving into the next chapter, let's go back through everything from Chapter ${chapter.number} — ${reviewQuestions.length} questions, pulled from every section you just worked through.</div>
     <div id="review-slot"></div>
   `;
 
@@ -341,10 +334,7 @@ async function submitReviewAnswer(quizId, selectedIndex) {
       el.innerHTML = `
         <div class="crumb">Chapter ${reviewChapter.number} · ${escapeHtmlDash(reviewChapter.title)} <span>· Chapter Review Complete</span></div>
         <h1 class="section-title">${scorePercent}% — you passed!</h1>
-        <div class="satoshi-intro">
-          <div class="satoshi-avatar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B0D10" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M9.5 10.8c0-.5.4-.9.9-.9s.9.4.9.9M12.7 10.8c0-.5.4-.9.9-.9s.9.4.9.9"/><path d="M9.5 14c.9.9 4.1.9 5 0"/></svg></div>
-          <p><b>ShalaKasi:</b> ${rewardLine}</p>
-        </div>
+        <div class="review-note">${rewardLine}</div>
         <button class="continue-btn" id="review-continue">Continue to the next chapter</button>
       `;
       document.getElementById('review-continue').addEventListener('click', loadNextSection);
@@ -352,10 +342,7 @@ async function submitReviewAnswer(quizId, selectedIndex) {
       el.innerHTML = `
         <div class="crumb">Chapter ${reviewChapter.number} · ${escapeHtmlDash(reviewChapter.title)} <span>· Chapter Review</span></div>
         <h1 class="section-title">${scorePercent}% — not quite there yet</h1>
-        <div class="satoshi-intro">
-          <div class="satoshi-avatar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B0D10" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M9.5 10.8c0-.5.4-.9.9-.9s.9.4.9.9M12.7 10.8c0-.5.4-.9.9-.9s.9.4.9.9"/><path d="M9.5 14c.9.9 4.1.9 5 0"/></svg></div>
-          <p><b>ShalaKasi:</b> You need 70% to pass and move on to the next chapter. Worth going back through the sections you're less sure of before trying again.</p>
-        </div>
+        <div class="review-note">You need 70% to pass and move on to the next chapter. Worth going back through the sections you're less sure of before trying again.</div>
         <button class="continue-btn" id="review-retry">Try the review again</button>
       `;
       document.getElementById('review-retry').addEventListener('click', () => loadChapterReview(reviewChapter));
@@ -556,7 +543,7 @@ async function submitAnswer(quizId, selectedIndex) {
     document.getElementById('next-q').addEventListener('click', renderCheckpoint);
   } else if (data.decision) {
     decisionSlot.innerHTML = `
-      <div class="decision-note">💡 <span><b>ShalaKasi:</b> ${data.decision.reasoning}</span></div>
+      <div class="decision-note">💡 <span>${data.decision.reasoning}</span></div>
       <button class="continue-btn" id="continue-btn">Continue</button>`;
     document.getElementById('continue-btn').addEventListener('click', loadNextSection);
   }
